@@ -4,12 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gosheim</title>
+    <style>
+        /* Basic Reset & Box Sizing */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif; /* A more readable font */
+            line-height: 1.6;
+            background-color: #f4f4f4; /* Light background for better readability */
+            color: #333; /* Dark text for contrast */
+            padding: 10px; /* Small padding around the body content */
+        }
+
+        div {
+            max-width: 960px; /* Limit the maximum width of the div */
+            margin: 20px auto; /* Center the div horizontally and add some vertical margin */
+            padding: 20px; /* Add padding inside the div */
+            background-color: #fff; /* White background for the div */
+            border-radius: 8px; /* Slightly rounded corners */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        }
+
+        /* Styles for the Muslim Pro Widget (if needed, this targets its container) */
+        /* Since the widget loads dynamically, you might need to inspect its generated HTML
+           to apply more specific responsive styles to its internal elements.
+           For now, the general div styling should help contain it. */
+
+        /* Media Queries for smaller screens */
+        @media (max-width: 768px) {
+            div {
+                margin: 10px auto; /* Reduce vertical margin on smaller screens */
+                padding: 15px; /* Reduce padding on smaller screens */
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 5px; /* Even less padding on very small screens */
+            }
+
+            div {
+                margin: 5px auto; /* Further reduce margin */
+                padding: 10px; /* Further reduce padding */
+                border-radius: 4px; /* Slightly less rounded corners */
+            }
+        }
+    </style>
 </head>
 <body>
-   <div></div>
-    <script type="text/javascript" src="https://www.muslimpro.com/muslimprowidget.js?cityid=2918844&timeformat=12" async></script>
+    <div>
+        <div>
+			<script type="text/javascript" src="https://www.muslimpro.com/muslimprowidget.js?cityid=2918844&timeformat=12" async></script>
+		</div>
+    </div>
     
+     
 </body>
 </html>
-
-
