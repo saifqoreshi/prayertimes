@@ -3,33 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gosheim</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <title>Horizontal Centering</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
     <style>
-      /* You can add custom styles here, if needed */
-      body {
-        height: 100vh; /* Make body full height */
-        margin: 0; /* Remove default body margin */
-        display: flex; /* Use flexbox for centering */
-        justify-content: center; /* Center horizontally */
-        align-items: center; /* Center vertically */
+      .container {
+        margin-top: 20px; /* Add a top margin for spacing, if needed */
+        margin-bottom: 20px; /* Add a bottom margin for spacing, if needed */
       }
-      .centered-content {
-        text-align: center;
+	  #muslimpro-widget-container {
+        width: 100%;
+        max-width: 100%;
       }
-      #muslimpro-widget-container {
-        margin-top: 20px;
-      }
+	  
     </style>
 </head>
 <body>
-    <div class="container">
-            <div id="muslimpro-widget-container" class="mt-2 container d-flex align-items-center justify-content-center">
-			<script type="text/javascript" src="https://www.muslimpro.com/muslimprowidget.js?cityid=2918844&timeformat=12" async></script>
-			</div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-    
+  <div class="container d-flex justify-content-center" id="muslimpro-widget-container">
+    <script type="text/javascript" src="https://www.muslimpro.com/muslimprowidget.js?cityid=2918844&timeformat=12&width=300" async></script>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
