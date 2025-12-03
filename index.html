@@ -5,137 +5,96 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prayer Times - Gosheim</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheetbackground for the whole page */
-        body {
-            background-color: #121212; /* Dark gray/black */
-            color: #ffffff; /* Default text color for contrast */
-            font-family: Arial, sans-serif;
-        }
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        
+<style>
+  
+    body {
+        background-color: #121212; /* Dark gray/black */
+        color: #ffffff; /* Default text color for contrast */
+        font-family: Arial, sans-serif;
+    }
 
-        /* General styling for the container */
+    /* General styling for the container */
+    .container {
+        margin-top: 20px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    /* Style for the widget container */
+    #muslimpro-widget-container {
+        margin-top: 20px;
+        width: 100%;
+        max-width: 300px;
+    }
+
+    /* Widget styling adjustments */
+    .MPwidget {
+        width: 100%;
+        font-size: 1.1em;
+        display: block;
+        background-color: #1e1e1e; /* Dark widget background */
+        border-radius: 4px;
+        box-shadow: 0 0 5px #333;
+        margin: 0 0 2em 0;
+        color: #ffffff; /* Text color inside widget */
+    }
+
+    .MPheader {
+        background-color: #5c4829;
+        color: #ffffff;
+        font-family: serif;
+        font-size: 1.1em;
+        font-style: italic;
+        padding: 10px;
+        border-radius: 4px 4px 0 0;
+    }
+
+    .MPtimetable {
+        width: 100%;
+        font-family: "Open Sans", Helvetica Neue, sans-serif;
+        font-size: 1.1em;
+        color: #ffffff; /* White text for readability */
+    }
+
+    .MPtimetable tr:nth-child(2n) {
+        background-color: #2a2a2a; /* Darker alternate row */
+    }
+
+    .MPfooter {
+        background-color: #5c4829;
+        color: #ffffff;
+        padding: 5px 10px;
+        border-radius: 0 0 4px 4px;
+        text-align: center;
+    }
+
+    /* Media query for small screens */
+    @media (max-width: 768px) {
         .container {
-            margin-top: 20px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-            width: 100%;
-            padding-left: 10px;
-            padding-right: 10px;
+            padding-left: 0;
+            padding-right: 0;
         }
-
-        /* Style for the widget container */
-        #muslimpro-widget-container {
-            margin-top: 20px;
-            width: 100%;
-            max-width: 300px;
-        }
-
-        /* Widget styling adjustments */
         .MPwidget {
-            width: 100%;
-            font-size: 1.1em;
-            display: block;
-            background-color: #1e1e1e; /* Dark widget background */
-            border-radius: 4px;
-            box-shadow: 0 0 5px #333;
-            margin: 0 0 2em 0;
-            color: #ffffff; /* Text color inside widget */
+            border-radius: 0;
+            box-shadow: none;
         }
+        .MPheader, .MPfooter {
+            border-radius: 0;
+        }
+    }
+</style>
 
-        .MPwidget a:link, .MPwidget a:visited, .MPwidget a:hover, .MPwidget a:active {
-            color: #ffffff;
-            border: 0;
-            text-decoration: none;
-        }
-
-        .MPheader {
-            background-color: #333333; /* Dark header */
-            color: #ffffff;
-            font-family: serif;
-            font-size: 1.1em;
-            font-style: italic;
-            padding: 10px;
-            border-radius: 4px 4px 0 0;
-        }
-
-        .logo {
-            float: left;
-            border-radius: 4px;
-            margin: 0 10px 0 0;
-            width: 40px;
-            border: 0;
-            vertical-align: middle;
-        }
-
-        .title {
-            padding: 0 0 0 50px;
-            font-size: 1.1em;
-        }
-
-        .MPtimetable {
-            width: 100%;
-            font-family: "Open Sans", Helvetica Neue, sans-serif;
-            font-size: 1.1em;
-            color: #ffffff; /* White text for readability */
-        }
-
-        .MPtimetable tr {
-            height: 30px;
-            background-color: #1e1e1e;
-        }
-
-        .MPtimetable tr:nth-child(2n) {
-            background-color: #2a2a2a; /* Darker alternate row */
-        }
-
-        .MPtimetable td {
-            text-align: right;
-            padding: 4px 8px 4px 4px;
-            font-size: 1.1em;
-        }
-
-        .MPtimetable td:nth-child(2) {
-            font-weight: bold;
-            text-align: left;
-            padding: 4px 4px 4px 8px;
-            font-size: 1.1em;
-        }
-
-        .daterow {
-            width: 100%;
-            text-align: center;
-            padding: 4px;
-            font-size: 1.1em;
-        }
-
-        .MPfooter {
-            background-color: #333333; /* Dark footer */
-            color: #ffffff;
-            padding: 5px 10px;
-            border-radius: 0 0 4px 4px;
-            text-align: center;
-        }
-
-        /* Media query for small screens */
-        @media (max-width: 768px) {
-            .container {
-                padding-left: 0;
-                padding-right: 0;
-            }
-            .MPwidget {
-                border-radius: 0;
-                box-shadow: none;
-            }
-            .MPheader, .MPfooter {
-                border-radius: 0;
-            }
-        }
-    </style>
 </head>
 <body>
     <div class="container">
         <div id="muslimpro-widget-container">
-            <script type="text/javascript" src="https://www.muslimpro.com/muslimprowidget.js?cityid=2918844&amp>
+            <script type="text/javascript" src="https://www.muslimpro.com/muslimprowidget.js?cityid=2918844&amp;timeformat=12&amp;width=300" async></script>
         </div>
     </div>
 </body>
