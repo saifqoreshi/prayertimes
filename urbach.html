@@ -1,142 +1,119 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prayer Times - Urbach</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-     <style>
-         
-        /* General styling for the container */
-        .container {
-		    
-            margin-top: 20px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-            width: 100%;
-            padding-left: 10px;
-            padding-right: 10px;
-        }
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+<head>
+<style>
+/* Global Dark Mode */
+body {
+    background-color: #000;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+}
 
-        /* Style for the widget container */
-        #muslimpro-widget-container {
-	    margin-top: 20px;
-            width: 100%;
-            max-width: 300px;
-        }
+.container {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: 10px;
+}
 
-        /* Styles from Muslim Pro, adjusted for responsiveness and increased font size */
-        .MPwidget {
-            width: 100%;
-            font-size: 1.1em; /* Increased font size */
-            display: block;
-            background-color: #fff;
-            border-radius: 4px;
-            box-shadow: 0 0 5px #aaa;
-            margin: 0 0 2em 0;
-        }
-        .MPwidget a:link, .MPwidget a:visited, .MPwidget a:hover, .MPwidget a:active {
-            color: #ffffff;
-            border: 0;
-            text-decoration: none;
-        }
-        .MPheader {
-            display: block;
-            margin: 0 0 0 0;
-            min-height: 36px;
-            padding: 10px;
-            border-radius: 4px 4px 0 0;
-            background-color: #5c4829;
-            color: #ffffff;
-            font-family: serif;
-            font-size: 1.1em; /* Increased font size */
-            font-style: italic;
-            position: relative;
-        }
-        .logo {
-            float: left;
-            border-radius: 4px;
-            margin: 0 10px 0 0;
-            width: 40px;
-            border: 0;
-            vertical-align: middle;
-        }
-        .title {
-            padding: 0 0 0 50px;
-             font-size: 1.1em; /* Increased font size */
-        }
-        .MPtimetable {
-            width: 100%;
-            border-spacing: 0;
-            font-family: "Open Sans", Helvetica Neue, sans-serif;
-            font-size: 1.1em; /* Increased font size */
-            color: #000000;
-        }
-        .MPtimetable tr {
-            height: 30px;
-            background-color: #ffffff;
-        }
-        .MPtimetable tr:nth-child(2n) {
-            background-color: #fff0c0;
-        }
-        .MPtimetable td {
-            text-align: right;
-            padding: 4px 8px 4px 4px;
-             font-size: 1.1em; /* Increased font size */
-        }
-        .MPtimetable td:nth-child(2) {
-            font-weight: bold;
-            text-align: left;
-            padding: 4px 4px 4px 8px;
-             font-size: 1.1em; /* Increased font size */
-        }
-        .daterow {
-            width: 100%;
-            text-align: center;
-            padding: 4px;
-             font-size: 1.1em; /* Increased font size */
-        }
-        .MPfooter {
-            display: block;
-            margin: 0 0 1.1em 0;
-            font-size: 1.1em; /* Increased font size */
-            padding: 5px 10px;
-            border-radius: 0 0 4px 4px;
-            background-color: #5c4829;
-            color: #ffffff;
-            position: relative;
-            text-align: center;
-            width: 100%;
-        }
+#muslimpro-widget-container {
+    margin-top: 20px;
+    width: 100%;
+    max-width: 300px;
+}
 
-        /* Media query for small screens (mobile) */
-        @media (max-width: 768px) {
-            .container {
-                padding-left: 0;
-                padding-right: 0;
-            }
-            .MPwidget {
-                border-radius: 0;
-                box-shadow: none;
-            }
-             .MPheader {
-                border-radius: 0;
-             }
-             .MPfooter{
-                border-radius: 0;
-             }
-        }
-    </style>
+/* Override MuslimPro widget styles */
+.MPwidget {
+    width: 100% !important;
+    font-size: 1.1em !important;
+    display: block !important;
+    background-color: #1e1e1e !important;
+    border-radius: 6px !important;
+    box-shadow: 0 0 10px rgba(0,0,0,0.6) !important;
+    margin: 0 0 2em 0 !important;
+    color: #ffffff !important;
+}
+
+.MPheader {
+    background-color: #333333 !important;
+    color: #ffffff !important;
+    font-family: serif !important;
+    font-size: 1.2em !important;
+    font-style: italic !important;
+    padding: 12px !important;
+    border-radius: 6px 6px 0 0 !important;
+}
+
+.MPtimetable {
+    width: 100% !important;
+    font-family: 'Open Sans', Helvetica Neue, sans-serif !important;
+    font-size: 1.1em !important;
+    color: #ffffff !important;
+    border-spacing: 0 !important;
+}
+
+.MPtimetable tr:nth-child(odd) {
+    background-color: #2a2a2a !important;
+}
+
+.MPtimetable tr:nth-child(even) {
+    background-color: #1e1e1e !important;
+}
+
+.MPtimetable td {
+    color: #ffffff !important;
+    padding: 6px 10px !important;
+    text-align: left !important;
+}
+
+.MPfooter {
+    background-color: #333333 !important;
+    color: #ffffff !important;
+    padding: 8px 12px !important;
+    border-radius: 0 0 6px 6px !important;
+    text-align: center !important;
+}
+
+/* Links inside widget */
+.MPwidget a {
+    color: #ffcc00 !important;
+    text-decoration: none !important;
+    transition: color 0.3s ease !important;
+}
+
+.MPwidget a:hover {
+    color: #ffd633 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding: 0;
+    }
+    .MPwidget {
+        border-radius: 0 !important;
+        box-shadow: none !important;
+    }
+    .MPheader, .MPfooter {
+        border-radius: 0 !important;
+    }
+}
+</style>
 </head>
 <body>
     <div class="container">
         <div id="muslimpro-widget-container">
-			<script type="text/javascript" src="https://www.muslimpro.com/muslimprowidget.js?cityid=2818243&amp;timeformat=12&amp;width=300" async=""></script>
+            <script type="text/javascript" src="https://www.muslimpro.com/muslimprowidget.js?cityid=2818243&amp;timeformat=12&amp;width=300" async=""></script>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
-
