@@ -15,8 +15,8 @@
     th, td { padding:12px; border-bottom:1px solid #233044; text-align:center; }
     th { color:#9fb0c0; font-size:0.9rem; }
     tr:last-child td { border-bottom:none; }
-    .row.current td:nth-child(2) { color:#3aa3ff; font-weight:700; }
-    .row.next td:nth-child(2) { color:#25c2a0; font-weight:700; }
+    .row.current td:nth-child(2) { color:#3aa3ff; font-weight:700; background:rgba(58,163,255,0.12); }
+    .row.next td:nth-child(2) { color:#25c2a0; font-weight:700; background:rgba(37,194,160,0.12); }
     .indicator { display:block; font-size:0.75rem; margin-top:4px; }
 
     .countdown { background:#111722; border:1px solid #233044; border-radius:14px; padding:14px; margin-bottom:16px; text-align:center; }
@@ -100,11 +100,9 @@
       const now=new Date();
       let current=null,next=null;
       ["Fajr","Dhuhr","Asr","Maghrib","Isha"].forEach(p=>{
-        if(now>=prayerTimes[p]) current=p;
-        else if(!next) next=p;
+        if(now>=prayerTimes[p]) current=p; // last one passed becomes current
+        else if(!next) next=p; // first one in the future
       });
-      // Always mark the last prayer as current if no next
-      if(!next && current) next=null;
 
       el.tableBody.innerHTML="";
       PRAYER_ORDER.forEach(p=>{
