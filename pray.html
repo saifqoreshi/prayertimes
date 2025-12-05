@@ -2,61 +2,28 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Prayer Times – Gosheim</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prayer Times – Gosheim, Germany</title>
   <style>
-    /* Dark mode variables */
-    :root {
-      --bg: #0b0f14;
-      --card: #111722;
-      --text: #e6edf3;
-      --muted: #9fb0c0;
-      --accent: #3aa3ff;
-      --accent-2: #25c2a0;
-      --border: #233044;
-      --shadow: 0 8px 24px rgba(0,0,0,0.35);
-      --radius: 14px;
-    }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: system-ui, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    .app { max-width: 680px; margin: 0 auto; padding: 16px; }
-    header { margin-bottom: 12px; }
-    h1 { font-size: 1.25rem; margin: 0; }
-    .sub { color: var(--muted); font-size: 0.9rem; }
+    body { background:#0b0f14; color:#e6edf3; font-family:sans-serif; margin:0; }
+    .app { max-width:680px; margin:0 auto; padding:16px; }
+    header { margin-bottom:12px; }
+    h1 { font-size:1.25rem; margin:0; }
+    .sub { color:#9fb0c0; font-size:0.9rem; }
 
-    table {
-      width: 100%; border-collapse: collapse;
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--radius); box-shadow: var(--shadow);
-      margin-bottom: 16px;
-    }
-    th, td { padding: 12px; border-bottom: 1px solid var(--border); text-align: center; }
-    th { color: var(--muted); font-size: 0.9rem; }
-    tr:last-child td { border-bottom: none; }
-    .row.current td:nth-child(2) { color: var(--accent); font-weight: 700; }
-    .row.next td:nth-child(2) { color: var(--accent-2); font-weight: 700; }
-    .indicator { display: block; font-size: 0.75rem; margin-top: 4px; }
+    table { width:100%; border-collapse:collapse; background:#111722; border:1px solid #233044; border-radius:14px; margin-bottom:16px; }
+    th, td { padding:12px; border-bottom:1px solid #233044; text-align:center; }
+    th { color:#9fb0c0; font-size:0.9rem; }
+    tr:last-child td { border-bottom:none; }
+    .row.current td:nth-child(2) { color:#3aa3ff; font-weight:700; }
+    .row.next td:nth-child(2) { color:#25c2a0; font-weight:700; }
+    .indicator { display:block; font-size:0.75rem; margin-top:4px; }
 
-    .countdown {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 14px; margin-bottom: 16px;
-      text-align: center;
-    }
-    .settings {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow);
-      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-    }
-    .settings label { color: var(--muted); font-size: 0.85rem; }
-    .settings select {
-      background: transparent; color: var(--text);
-      border: 1px solid var(--border); border-radius: 10px; padding: 10px;
-    }
+    .countdown { background:#111722; border:1px solid #233044; border-radius:14px; padding:14px; margin-bottom:16px; text-align:center; }
+
+    .settings { background:#111722; border:1px solid #233044; border-radius:14px; padding:12px; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .settings label { color:#9fb0c0; font-size:0.85rem; }
+    .settings select { background:transparent; color:#e6edf3; border:1px solid #233044; border-radius:10px; padding:10px; }
   </style>
 </head>
 <body>
@@ -64,15 +31,13 @@
     <header>
       <h1>Prayer times for Gosheim, Germany</h1>
       <div class="sub" id="gregorian"></div>
+      <div class="sub" id="hijri"></div>
     </header>
 
     <!-- Table first -->
     <table>
       <thead>
-        <tr>
-          <th>Prayer</th>
-          <th>Time & Status</th>
-        </tr>
+        <tr><th>Prayer</th><th>Time & Status</th></tr>
       </thead>
       <tbody id="tableBody"></tbody>
     </table>
@@ -105,31 +70,22 @@
   </div>
 
   <script>
-    const ADDRESS = "Gosheim, Germany";
-    const PRAYER_ORDER = ["Fajr","Sunrise","Dhuhr","Asr","Maghrib","Isha"];
-    const el = {
-      tableBody: document.getElementById("tableBody"),
-      gregorian: document.getElementById("gregorian"),
-      nextName: document.getElementById("nextName"),
-      countdown: document.getElementById("countdown"),
-      methodSelect: document.getElementById("methodSelect"),
-      schoolSelect: document.getElementById("schoolSelect"),
+    const ADDRESS="Gosheim, Germany";
+    const PRAYER_ORDER=["Fajr","Sunrise","Dhuhr","Asr","Maghrib","Isha"];
+    const el={
+      tableBody:document.getElementById("tableBody"),
+      gregorian:document.getElementById("gregorian"),
+      hijri:document.getElementById("hijri"),
+      nextName:document.getElementById("nextName"),
+      countdown:document.getElementById("countdown"),
+      methodSelect:document.getElementById("methodSelect"),
+      schoolSelect:document.getElementById("schoolSelect")
     };
 
-    function pad(n){ return String(n).padStart(2,"0"); }
-    function formatAPIDate(d){ return `${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()}`; }
-
-    function parseTime(baseDate, timeStr){
-      const [hh,mm] = timeStr.split(":").map(Number);
-      const d = new Date(baseDate); d.setHours(hh,mm,0,0); return d;
-    }
-
-    function hms(ms){
-      if(ms<0) ms=0;
-      const s=Math.floor(ms/1000);
-      const hh=Math.floor(s/3600), mm=Math.floor((s%3600)/60), ss=s%60;
-      return `${pad(hh)}:${pad(mm)}:${pad(ss)}`;
-    }
+    function pad(n){return String(n).padStart(2,"0");}
+    function formatAPIDate(d){return `${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()}`;}
+    function parseTime(baseDate,timeStr){const [hh,mm]=timeStr.split(":").map(Number);const d=new Date(baseDate);d.setHours(hh,mm,0,0);return d;}
+    function hms(ms){if(ms<0)ms=0;const s=Math.floor(ms/1000);const hh=Math.floor(s/3600),mm=Math.floor((s%3600)/60),ss=s%60;return `${pad(hh)}:${pad(mm)}:${pad(ss)}`;}
 
     async function loadTimings(){
       const date=new Date();
@@ -139,15 +95,16 @@
       const data=await res.json();
       const timings=data.data.timings;
       const prayerTimes={};
-      PRAYER_ORDER.forEach(p=>{ prayerTimes[p]=parseTime(date,timings[p]); });
+      PRAYER_ORDER.forEach(p=>{prayerTimes[p]=parseTime(date,timings[p]);});
 
-      // Determine current/next
       const now=new Date();
       let current=null,next=null;
       ["Fajr","Dhuhr","Asr","Maghrib","Isha"].forEach(p=>{
         if(now>=prayerTimes[p]) current=p;
         else if(!next) next=p;
       });
+      // Always mark the last prayer as current if no next
+      if(!next && current) next=null;
 
       el.tableBody.innerHTML="";
       PRAYER_ORDER.forEach(p=>{
@@ -156,8 +113,7 @@
         if(p===current) tr.classList.add("current");
         if(p===next) tr.classList.add("next");
         const td1=document.createElement("td"); td1.textContent=p;
-        const td2=document.createElement("td");
-        td2.textContent=timings[p];
+        const td2=document.createElement("td"); td2.textContent=timings[p];
         if(p===current) td2.innerHTML+=`<span class="indicator">Current</span>`;
         if(p===next) td2.innerHTML+=`<span class="indicator">Next</span>`;
         tr.appendChild(td1); tr.appendChild(td2);
@@ -166,12 +122,17 @@
 
       if(next){
         el.nextName.textContent=next;
-        const tick=()=>{ el.countdown.textContent=hms(prayerTimes[next]-new Date()); };
+        const tick=()=>{el.countdown.textContent=hms(prayerTimes[next]-new Date());};
         tick(); setInterval(tick,1000);
+      } else {
+        el.nextName.textContent="—";
+        el.countdown.textContent="—";
       }
-      el.gregorian.textContent=data.data.date.readable;
-    }
 
+      // Show both Gregorian and Hijri dates
+      el.gregorian.textContent=data.data.date.readable;
+      el.hijri.textContent=`Hijri: ${data.data.date.hijri.day} ${data.data.date.hijri.month.en} ${data.data.date.hijri.year}`;
+    }
     loadTimings();
   </script>
 </body>
