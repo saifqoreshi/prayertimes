@@ -108,7 +108,7 @@ footer .meta{font-size:0.6rem;color:#6b7890;margin-top:4px;}
     </thead>
     <tbody></tbody>
   </table>
-  <div class="calendar-legend">Times are in 12-hour format</div>
+  <div class="calendar-legend">Times are in 12-hour format, no timezone displayed</div>
 </div>
 
 <footer>
@@ -204,7 +204,7 @@ const r=await fetch(`https://api.aladhan.com/v1/calendarByAddress?address=${enco
 const days=(await r.json()).data||[];
 el.calBody.innerHTML="";
 const today=new Date();
-days.forEach(day=>{const tr=document.createElement("tr");const readable=day.date.readable;const t=day.timings;const d=parseInt(readable.split(" ")[0]);const m=day.date.gregorian.month.number;const y=day.date.gregorian.year;if(d===today.getDate()&&m===today.getMonth()+1&&y===today.getFullYear()) tr.classList.add("cal-today");const cells=[readable,t.Fajr,t.Dhuhr,t.Asr,t.Maghrib,t.Isha];cells.forEach(c=>{const td=document.createElement("td");td.textContent=c;tr.appendChild(td);});el.calBody.appendChild(tr);});
+days.forEach(day=>{const tr=document.createElement("tr");const readable=day.date.readable;const t=day.timings;const d=parseInt(readable.split(" ")[0]);const m=day.date.gregorian.month.number;const y=day.date.gregorian.year;if(d===today.getDate()&&m===today.getMonth()+1&&y===today.getFullYear()) tr.classList.add("cal-today");const cells=[readable,t.Fajr.split(" ")[0],t.Dhuhr.split(" ")[0],t.Asr.split(" ")[0],t.Maghrib.split(" ")[0],t.Isha.split(" ")[0]];cells.forEach(c=>{const td=document.createElement("td");td.textContent=c;tr.appendChild(td);});el.calBody.appendChild(tr);});
 }catch{el.calBody.innerHTML="<tr><td colspan='6'>Monthly calendar unavailable</td></tr>";}
 }
 
