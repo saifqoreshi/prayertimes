@@ -1,263 +1,385 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Prayer Times – Gosheim, Germany</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta name="theme-color" content="#0b0f14" />
   <style>
     :root {
-      --primary: #00695c;
-      --accent: #00897b;
-      --light: #e0f2f1;
-      --text: #00332f;
+      --bg: #0b0f14;
+      --card: #111722;
+      --text: #e6edf3;
+      --muted: #9fb0c0;
+      --accent: #3aa3ff;
+      --accent-2: #25c2a0;
+      --border: #233044;
+      --radius: 12px;
+      --shadow: 0 6px 18px rgba(0,0,0,0.35);
     }
-    body {
-      margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; background: #f5fffe; color: var(--text); line-height: 1.5;
+    body { background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif; margin: 0; }
+    .app { max-width: 680px; margin: 0 auto; padding: 12px 16px 20px; }
+
+    /* Header with 3 lines */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 10px;
+      text-align: center;
     }
-    .container { max-width: 800px; margin: 0 auto; padding: 0 15px; }
-    .sticky-header {
-      position: sticky; top: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
-      border-bottom: 1px solid #ddd; z-index: 1000; text-align: center; padding: 8px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    header h1 { font-size: 1rem; margin: 0; }
+    header .sub { font-size: 0.9rem; color: var(--muted); margin-top: 4px; }
+
+    /* Date navigation */
+    .date-nav { text-align: center; margin: 12px 0; }
+    .date-nav input[type="date"] {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px;
+      font-size: 0.9rem;
     }
-    .location { font-weight: bold; font-size: 1.25rem; color: var(--primary); }
-    .gregorian { font-size: 1.1rem; color: #444; }
-    .hijri { font-size: 1.05rem; color: var(--accent); font-style: italic; }
-    .next-prayer {
-      display: flex; justify-content: space-between; align-items: center;
-      background: linear-gradient(135deg, #e0f7fa, #ffffff); padding: 16px 20px; margin: 12px 0;
-      border-radius: 12px; font-size: 1.3rem; font-weight: bold; box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+
+    /* Next prayer row (left/right aligned) */
+    .next-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
     }
-    .next-name { color: var(--primary); }
-    .countdown { color: #d32f2f; }
-    .countdown.low { color: #c62828; animation: pulse 1.5s infinite; }
-    .date-picker { text-align: center; margin: 20px 0; }
-    .date-picker input { padding: 10px; font-size: 1rem; border: 2px solid var(--accent); border-radius: 8px; }
+    .next-row .label { font-size: 0.85rem; color: var(--muted); }
+    .next-row .value { font-size: 1rem; font-weight: 600; transition: opacity 0.2s ease; }
+
+    /* Day progress bar (Fajr → Isha) */
+    .progress-container {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 14px;
+      padding: 8px;
+      box-shadow: var(--shadow);
+    }
+    .progress-label { font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; }
+    .progress-bar {
+      width: 100%;
+      height: 10px;
+      background: #233044;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--accent-2);
+      width: 0%;
+      transition: width 0.7s ease;
+    }
+
+    /* Table */
     table {
-      width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin: 20px 0;
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
     }
-    th { background: var(--primary); color: white; padding: 14px; }
-    td { padding: 14px; text-align: center; border-bottom: 1px solid #eee; }
-    tr.current td { background: #fff3cd; font-weight: bold; }
-    tr.next td { background: #e8f5e8; }
-    .status-current { color: #f57c00; font-weight: bold; }
-    .status-next { color: #2e7d32; font-weight: bold; }
-    .sunrise { font-style: italic; color: #666; }
+    th, td { padding: 12px; border-bottom: 1px solid var(--border); text-align: center; }
+    th { color: var(--muted); font-size: 0.85rem; }
+    tr:last-child td { border-bottom: none; }
+    .row.current td:nth-child(2) { color: var(--accent); font-weight: 700; background: rgba(58,163,255,0.12); }
+    .row.next td:nth-child(2) { color: var(--accent-2); font-weight: 700; background: rgba(37,194,160,0.12); }
+    .indicator { display: block; font-size: 0.72rem; margin-top: 4px; }
+
+    /* Ramadan widget */
     .ramadan-widget {
-      background: linear-gradient(135deg, #fff8e1, #ffecb3); border: 2px solid #ffc107;
-      border-radius: 12px; padding: 20px; text-align: center; margin: 30px 0; font-size: 1.4rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-top: 14px;
+      text-align: center;
+      box-shadow: var(--shadow);
     }
-    .ramadan-days { font-size: 2.5rem; font-weight: bold; color: #e65100; margin: 10px 0; }
-    footer {
-      text-align: center; padding: 20px; font-size: 0.7rem; color: #666; background: #f8f9fa; margin-top: 50px;
-    }
-    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
-    @media (max-width: 600px) {
-      .next-prayer { font-size: 1.1rem; flex-direction: column; gap: 8px; text-align: center; }
-      table, th, td { font-size: 0.95rem; }
+    .ramadan-widget strong { color: var(--accent-2); }
+    .ramadan-widget .sub { color: var(--muted); font-size: 0.9rem; }
+
+    /* Footer */
+    footer { text-align: center; margin-top: 16px; padding-bottom: 8px; }
+    footer .powered { font-size: 0.7rem; color: var(--muted); }
+    footer .meta { font-size: 0.6rem; color: #6b7890; margin-top: 4px; }
+
+    /* Error */
+    .error {
+      color: #ff788a;
+      background: rgba(255,77,109,0.12);
+      border: 1px solid #ff4d6d;
+      border-radius: 10px;
+      padding: 8px;
+      margin: 10px 0;
+      display: none;
+      text-align: center;
+      font-size: 0.9rem;
     }
   </style>
 </head>
 <body>
+  <div class="app">
+    <header>
+      <h1>Prayer times for Gosheim, Germany</h1>
+      <div class="sub" id="gregorian">—</div>
+      <div class="sub" id="hijri">—</div>
+    </header>
 
-<div class="container">
+    <div id="error" class="error"></div>
 
-  <!-- Sticky Header -->
-  <header class="sticky-header">
-    <div class="location">Prayer times for Gosheim, Germany</div>
-    <div class="gregorian" id="gregorian-date">06 Dec 2025</div>
-    <div class="hijri" id="hijri-date">Hijri: 15 Jumādá al-ākhirah 1447</div>
-  </header>
+    <div class="date-nav">
+      <input type="date" id="dateInput" />
+    </div>
 
-  <!-- Next Prayer Row -->
-  <div class="next-prayer">
-    <div class="next-name" id="next-name">Next: Dhuhr</div>
-    <div class="countdown" id="countdown">2h 16m remaining</div>
+    <div class="next-row" aria-live="polite">
+      <div>
+        <span class="label">Next prayer</span>
+        <div class="value" id="nextName">—</div>
+      </div>
+      <div>
+        <span class="label">Countdown</span>
+        <div class="value" id="countdown">—</div>
+      </div>
+    </div>
+
+    <!-- Day progress bar -->
+    <div class="progress-container">
+      <div class="progress-label">Day progress (Fajr → Isha)</div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <table aria-label="Prayer times">
+      <thead>
+        <tr><th>Prayer</th><th>Time & Status</th></tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+
+    <!-- Ramadan widget -->
+    <div class="ramadan-widget" aria-live="polite">
+      <div><strong>Days until Ramadan:</strong> <span id="ramadanCountdown">—</span></div>
+      <div class="sub" id="ramadanDate">—</div>
+    </div>
+
+    <footer>
+      <div class="powered">Powered by AlAdhan API</div>
+      <div class="meta" id="meta">Method: Muslim World League • School: Hanafi</div>
+    </footer>
   </div>
 
-  <!-- Date Picker -->
-  <div class="date-picker">
-    <input type="date" id="date-picker" value="2025-12-06">
-  </div>
+  <script>
+    // Config
+    const ADDRESS = "Gosheim, Germany";
+    const METHOD = "3";  // Muslim World League
+    const SCHOOL = "1";  // Hanafi
+    const PRAYER_ORDER = ["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"];
+    const PRAYERS_FOR_STATUS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
 
-  <!-- Prayer Times Table -->
-  <table id="prayer-table">
-    <thead>
-      <tr>
-        <th>Prayer</th>
-        <th>Time</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Filled by JavaScript -->
-    </tbody>
-  </table>
+    // Elements
+    const el = {
+      tableBody: document.getElementById("tableBody"),
+      gregorian: document.getElementById("gregorian"),
+      hijri: document.getElementById("hijri"),
+      nextName: document.getElementById("nextName"),
+      countdown: document.getElementById("countdown"),
+      dateInput: document.getElementById("dateInput"),
+      ramadanCountdown: document.getElementById("ramadanCountdown"),
+      ramadanDate: document.getElementById("ramadanDate"),
+      meta: document.getElementById("meta"),
+      error: document.getElementById("error"),
+      progressFill: document.getElementById("progressFill"),
+    };
 
-  <!-- Ramadan Widget -->
-  <div class="ramadan-widget" id="ramadan-widget">
-    <div><span role="img" aria-label="true">New Moon</span> Ramadan Countdown</div>
-    <div class="ramadan-days" id="ramadan-days">74 days</div>
-    <div id="ramadan-start">Starts: 18 February 2026 (1 Ramadan 1447 AH)</div>
-  </div>
-
-  <!-- Footer -->
-  <footer>
-    Powered by <a href="https://aladhan.com" target="_blank">AlAdhan API</a> • 
-    Method: Muslim World League • School: Hanafi
-  </footer>
-
-</div>
-
-<script>
-const LAT = 48.134;        // Gosheim, Germany
-const LNG = 8.75;
-const METHOD = 3;           // Muslim World League
-const SCHOOL = 1;           // Hanafi (Asr)
-
-let currentDate = new Date();
-let selectedDate = new Date();
-
-function pad(num) { return num < 10 ? '0' + num : num; }
-
-async function fetchPrayerTimes(date) {
-  const dd = pad(date.getDate());
-  const mm = pad(date.getMonth() + 1);
-  const yyyy = date.getFullYear();
-  const url = `https://api.aladhan.com/v1/timings/${dd}-${mm}-${yyyy}?latitude=${LAT}&longitude=${LNG}&method=${METHOD}&school=${SCHOOL}`;
-
-  const res = await fetch(url);
-  const data = await res.json();
-  return data.data;
-}
-
-function updateAll() {
-  fetchPrayerTimes(selectedDate).then(data => {
-    const timings = data.timings;
-    const dateObj = data.date;
-
-    // Update header dates
-    document.getElementById('gregorian-date').textContent = dateObj.readable;
-    document.getElementById('hijri-date').textContent = 
-      `Hijri: ${dateObj.hijri.day} ${dateObj.hijri.month.en} ${dateObj.hijri.year}`;
-
-    // Build table
-    const prayers = [
-      { name: 'Fajr',    key: 'Fajr' },
-      { name: 'Sunrise', key: 'Sunrise', isSunrise: true },
-      { name: 'Dhuhr',   key: 'Dhuhr' },
-      { name: 'Asr',     key: 'Asr' },
-      { name: 'Maghrib', key: 'Maghrib' },
-      { name: 'Isha',    key: 'Isha' }
-    ];
-
-    const tbody = document.querySelector('#prayer-table tbody');
-    tbody.innerHTML = '';
-
-    let nextPrayer = null;
-    let nextTime = null;
-    const now = new Date();
-    const todayStr = selectedDate.toISOString().split('T')[0];
-
-    prayers.forEach(p => {
-      if (p.isSunrise) {
-        tbody.innerHTML += `
-          <tr class="sunrise">
-            <td>${p.name}</td>
-            <td>${timings[p.key]}</td>
-            <td></td>
-          </tr>`;
-        return;
-      }
-
-      const [h, m] = timings[p.key].split(':');
-      const prayerDate = new Date(selectedDate);
-      prayerDate.setHours(+h, +m, 0, 0);
-
-      let status = '';
-      let rowClass = '';
-
-      if (prayerDate <= now && (!nextPrayer || prayerDate > nextTime)) {
-        rowClass = 'current';
-        status = '<span class="status-current">Current</span>';
-      }
-
-      if (!nextPrayer || prayerDate > nextTime) {
-        nextPrayer = p.name;
-        nextTime = prayerDate;
-        rowClass = 'next';
-        status = '<span class="status-next">Next ▶</span>';
-      }
-
-      tbody.innerHTML += `
-        <tr class="${rowClass}">
-          <td>${p.name}</td>
-          <td>${timings[p.key]}</td>
-          <td>${status}</td>
-        </tr>`;
-    });
-
-    // Update next prayer row
-    document.getElementById('next-name').textContent = `Next: ${nextPrayer}`;
-    updateCountdown(nextTime);
-  });
-}
-
-// Countdown updater
-function updateCountdown(nextPrayerDate) {
-  const countdownEl = document.getElementById('countdown');
-
-  function tick() {
-    const now = new Date();
-    const diff = nextPrayerDate - now;
-
-    if (diff <= 0) {
-      countdownEl.textContent = 'Time for prayer!';
-      countdownEl.classList.add('low');
-      return;
+    // Helpers
+    function pad(n){ return String(n).padStart(2,"0"); }
+    function formatAPIDate(d){ return `${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()}`; }
+    function formatInputDate(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+    function parseTime(baseDate, timeStr){
+      const [hh, mm] = timeStr.split(":").map(Number);
+      const d = new Date(baseDate);
+      d.setHours(hh, mm, 0, 0);
+      return d;
+    }
+    function hms(ms){
+      if(ms < 0) ms = 0;
+      const s = Math.floor(ms / 1000);
+      const hh = Math.floor(s / 3600), mm = Math.floor((s % 3600) / 60), ss = s % 60;
+      return `${pad(hh)}:${pad(mm)}:${pad(ss)}`;
+    }
+    function buildRow(name, time, isCurrent, isNext){
+      const tr = document.createElement("tr");
+      tr.className = "row" + (isCurrent ? " current" : "") + (isNext ? " next" : "");
+      const tdName = document.createElement("td"); tdName.textContent = name;
+      const tdTime = document.createElement("td"); tdTime.textContent = time;
+      if(isCurrent){ tdTime.innerHTML += `<span class="indicator">Current</span>`; }
+      else if(isNext){ tdTime.innerHTML += `<span class="indicator">Next</span>`; }
+      tr.appendChild(tdName); tr.appendChild(tdTime);
+      return tr;
+    }
+    function parseDDMMYYYYtoDate(ddmmYYYY){
+      const [dd, mm, yyyy] = ddmmYYYY.split("-").map(Number);
+      return new Date(`${yyyy}-${pad(mm)}-${pad(dd)}T00:00:00`);
     }
 
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    // Ramadan widget
+    async function updateRamadanWidget(hijriInfo){
+      try {
+        const currentYear = parseInt(hijriInfo?.year, 10);
+        const currentMonthNum = hijriInfo?.month?.number;
+        const currentDay = parseInt(hijriInfo?.day, 10);
+        let targetYear;
+        if(!currentYear || typeof currentMonthNum !== "number" || isNaN(currentDay)) {
+          targetYear = new Date().getFullYear();
+        } else if(currentMonthNum < 9 || (currentMonthNum === 9 && currentDay < 1)) {
+          targetYear = currentYear;
+        } else {
+          targetYear = currentYear + 1;
+        }
 
-    countdownEl.textContent = `${hours}h ${minutes}m remaining`;
-    countdownEl.classList.toggle('low', diff < 5 * 60 * 1000); // < 5 min
-  }
+        const res = await fetch(`https://api.aladhan.com/v1/hToG?date=1-9-${targetYear}`);
+        if(!res.ok) throw new Error(`Ramadan API ${res.status}`);
+        const json = await res.json();
+        const gDateStr = json?.data?.gregorian?.date; // DD-MM-YYYY
+        if(!gDateStr) throw new Error("Missing Ramadan date");
 
-  tick();
-  setInterval(tick, 1000);
-}
+        const ramadanGregorian = parseDDMMYYYYtoDate(gDateStr);
+        const today = new Date();
+        const diffDays = Math.ceil((ramadanGregorian - today) / 86400000);
 
-// Ramadan countdown (approximate for 1447 / 2026)
-function updateRamadan() {
-  const ramadan2026 = new Date.UTC(2026, 1, 18); // 18 Feb 2026 ≈ 1 Ramadan 1447
-  const now = new Date();
-  const diff = ramadan2026 - now;
+        el.ramadanCountdown.textContent =
+          diffDays > 0 ? diffDays :
+          diffDays === 0 ? "Today" : "Started";
+        el.ramadanDate.textContent = `Start: ${gDateStr} • 1-9-${targetYear} Hijri`;
+      } catch (e) {
+        el.ramadanCountdown.textContent = "—";
+        el.ramadanDate.textContent = "Ramadan countdown unavailable";
+      }
+    }
 
-  if (diff < 0) {
-    document.getElementById('ramadan-widget').innerHTML = `
-      <div>Ramadan Mubarak!</div>
-      <div class="ramadan-days">In Progress</div>
-    `;
-    return;
-  }
+    // Progress bar update (between Fajr and Isha)
+    function updateProgressBar(prayerMap){
+      const fajr = prayerMap["Fajr"];
+      const isha = prayerMap["Isha"];
+      if(!fajr || !isha){ el.progressFill.style.width = "0%"; return; }
+      const now = new Date();
+      const start = fajr.getTime();
+      const end = isha.getTime();
+      if(now.getTime() <= start){ el.progressFill.style.width = "0%"; return; }
+      if(now.getTime() >= end){ el.progressFill.style.width = "100%"; return; }
+      const pct = ((now.getTime() - start) / (end - start)) * 100;
+      el.progressFill.style.width = `${Math.max(0, Math.min(100, pct))}%`;
+    }
 
-  const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-  document.getElementById('ramadan-days').textContent = `${days} days`;
-}
+    let countdownTimer = null;
+    let progressTimer = null;
 
-// Date picker handler
-document.getElementById('date-picker').addEventListener('change', e => {
-  selectedDate = new Date(e.target.value);
-  updateAll();
-});
+    // Load timings for a given date
+    async function loadTimingsForDate(dateObj){
+      try {
+        el.error.style.display = "none";
 
-// Initial load
-updateAll();
-updateRamadan();
-setInterval(updateAll, 60000); // refresh every minute for current/next status
+        const apiDate = formatAPIDate(dateObj);
+        const url = `https://api.aladhan.com/v1/timingsByAddress/${apiDate}?address=${encodeURIComponent(ADDRESS)}&method=${METHOD}&school=${SCHOOL}`;
 
-</script>
+        const res = await fetch(url);
+        if(!res.ok) throw new Error(`API error ${res.status}`);
+        const json = await res.json();
+        const data = json?.data || {};
+        const timings = data?.timings || {};
+        const dateInfo = data?.date || {};
+        const hijri = dateInfo?.hijri;
+
+        // Header dates
+        el.gregorian.textContent = dateInfo?.readable || "—";
+        if(hijri && hijri.month) {
+          el.hijri.textContent = `Hijri: ${hijri.day} ${hijri.month.en} ${hijri.year}`;
+        } else {
+          el.hijri.textContent = "Hijri: —";
+        }
+
+        // Prayer Date objects
+        const prayerMap = {};
+        PRAYER_ORDER.forEach(p => {
+          const t = timings[p];
+          if(t) prayerMap[p] = parseTime(dateObj, t);
+        });
+
+        // Determine current and next (relative to now)
+        const now = new Date();
+        let current = null;
+        let next = null;
+        for(const p of PRAYERS_FOR_STATUS){
+          const t = prayerMap[p];
+          if(!t) continue;
+          if(now >= t){ current = p; }
+          else if(!next){ next = p; }
+        }
+
+        // Build table
+        el.tableBody.innerHTML = "";
+        PRAYER_ORDER.forEach(p => {
+          const time = timings[p];
+          if(!time) return;
+          const row = buildRow(p, time, p === current, p === next);
+          el.tableBody.appendChild(row);
+        });
+
+        // Countdown (animated tick)
+        if(countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+        if(next && prayerMap[next]) {
+          el.nextName.textContent = next;
+          const tick = () => el.countdown.textContent = hms(prayerMap[next] - new Date());
+          tick();
+          countdownTimer = setInterval(tick, 1000);
+        } else {
+          el.nextName.textContent = "—";
+          el.countdown.textContent = "—";
+        }
+
+        // Progress bar (updates every 30s)
+        updateProgressBar(prayerMap);
+        if(progressTimer) { clearInterval(progressTimer); progressTimer = null; }
+        progressTimer = setInterval(() => updateProgressBar(prayerMap), 30000);
+
+        // Ramadan widget
+        await updateRamadanWidget(hijri);
+
+        // Footer meta
+        el.meta.textContent = "Method: Muslim World League • School: Hanafi";
+      } catch (e) {
+        el.error.textContent = `Could not load timings. ${e.message}`;
+        el.error.style.display = "block";
+      }
+    }
+
+    // Init to today and attach handler
+    (function init() {
+      const today = new Date();
+      el.dateInput.value = formatInputDate(today);
+      loadTimingsForDate(today);
+    })();
+
+    el.dateInput.addEventListener("change", () => {
+      if(!el.dateInput.value) return;
+      const d = new Date(el.dateInput.value + "T00:00:00");
+      loadTimingsForDate(d);
+    });
+  </script>
 </body>
 </html>
