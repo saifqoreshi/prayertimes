@@ -1,119 +1,233 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prayer Times - Urbach</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prayer Times – Urbach, Germany</title>
 <style>
-/* Global Dark Mode */
-body {
-    background-color: #000;
-    color: #ffffff;
-    font-family: Arial, sans-serif;
-    line-height: 1.6;
+:root {
+  --bg:#0b0f14; --card:#111722; --text:#e6edf3; --muted:#9fb0c0;
+  --accent:#3aa3ff; --accent2:#25c2a0; --border:#233044; --radius:12px;
+  --shadow:0 6px 18px rgba(0,0,0,0.35);
 }
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
+.app{max-width:740px;margin:0 auto;padding:12px 16px 24px;}
+header{position:sticky;top:0;background:var(--card);padding:10px;border-bottom:1px solid var(--border);box-shadow:var(--shadow);}
+header h1{margin:0;font-size:1rem;}
+header .sub{font-size:0.9rem;color:var(--muted);margin-top:4px;}
+.error{display:none;color:#ff788a;background:rgba(255,77,109,0.12);border:1px solid #ff4d6d;border-radius:10px;padding:8px;margin:10px 0;text-align:center;font-size:0.9rem;}
+.date-nav{display:flex;justify-content:center;align-items:center;gap:8px;margin:12px 0;}
+.date-nav button{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:0.9rem;cursor:pointer;}
+.date-nav input[type="date"]{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:8px;font-size:0.9rem;text-align:center;}
 
-.container {
-    margin-top: 20px;
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    padding: 10px;
-}
+.next-row{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:12px;box-shadow:var(--shadow);}
+.next-row .next-prayer{text-align:left;font-weight:600;}
+.next-row .countdown{text-align:right;font-weight:600;}
+.next-row .label{font-size:0.85rem;color:var(--muted);}
 
-#muslimpro-widget-container {
-    margin-top: 20px;
-    width: 100%;
-    max-width: 300px;
-}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden;}
+th,td{padding:10px;border-bottom:1px solid var(--border);text-align:center;font-size:0.88rem;}
+th{color:var(--muted);background:#0f1623;}
+tr:last-child td{border-bottom:none;}
+.row.current td:nth-child(2){color:var(--accent);font-weight:700;background:rgba(58,163,255,0.12);}
+.row.next td:nth-child(2){color:var(--accent2);font-weight:700;background:rgba(37,194,160,0.12);}
+.indicator{display:block;font-size:0.72rem;margin-top:4px;}
 
-/* Override MuslimPro widget styles */
-.MPwidget {
-    width: 100% !important;
-    font-size: 1.1em !important;
-    display: block !important;
-    background-color: #1e1e1e !important;
-    border-radius: 6px !important;
-    box-shadow: 0 0 10px rgba(0,0,0,0.6) !important;
-    margin: 0 0 2em 0 !important;
-    color: #ffffff !important;
-}
+.ramadan-widget{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-top:14px;text-align:center;box-shadow:var(--shadow);}
+.ramadan-widget strong{color:var(--accent2);}
+.ramadan-widget .sub{color:var(--muted);font-size:0.9rem;}
 
-.MPheader {
-    background-color: #333333 !important;
-    color: #ffffff !important;
-    font-family: serif !important;
-    font-size: 1.2em !important;
-    font-style: italic !important;
-    padding: 12px !important;
-    border-radius: 6px 6px 0 0 !important;
-}
+.calendar-toggle{text-align:center;margin:12px 0;}
+.calendar-toggle button{background:var(--card);color:var(--text);border:2px solid var(--accent);border-radius:var(--radius);padding:10px 18px;cursor:pointer;font-size:0.95rem;font-weight:600;box-shadow:var(--shadow);transition:0.25s;}
+.calendar-toggle button:hover{background:var(--accent);color:#fff;border-color:var(--accent2);}
+.calendar-container{display:none;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-top:16px;box-shadow:var(--shadow);max-height:360px;overflow-y:auto;}
+.calendar-controls{display:flex;justify-content:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;}
+.calendar-controls select,.calendar-controls button{padding:6px 10px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:0.85rem;cursor:pointer;}
+.calendar-table{width:100%;border-collapse:collapse;}
+.calendar-table th,.calendar-table td{padding:8px;border-bottom:1px solid var(--border);font-size:0.82rem;text-align:center;}
+.calendar-table th{color:var(--muted);background:#0f1623;}
+.calendar-table tr:last-child td{border-bottom:none;}
+.cal-today{background:rgba(58,163,255,0.25);font-weight:700;}
+.calendar-legend{font-size:0.75rem;color:var(--muted);text-align:center;margin-top:4px;}
 
-.MPtimetable {
-    width: 100% !important;
-    font-family: 'Open Sans', Helvetica Neue, sans-serif !important;
-    font-size: 1.1em !important;
-    color: #ffffff !important;
-    border-spacing: 0 !important;
-}
-
-.MPtimetable tr:nth-child(odd) {
-    background-color: #2a2a2a !important;
-}
-
-.MPtimetable tr:nth-child(even) {
-    background-color: #1e1e1e !important;
-}
-
-.MPtimetable td {
-    color: #ffffff !important;
-    padding: 6px 10px !important;
-    text-align: left !important;
-}
-
-.MPfooter {
-    background-color: #333333 !important;
-    color: #ffffff !important;
-    padding: 8px 12px !important;
-    border-radius: 0 0 6px 6px !important;
-    text-align: center !important;
-}
-
-/* Links inside widget */
-.MPwidget a {
-    color: #ffcc00 !important;
-    text-decoration: none !important;
-    transition: color 0.3s ease !important;
-}
-
-.MPwidget a:hover {
-    color: #ffd633 !important;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .container {
-        padding: 0;
-    }
-    .MPwidget {
-        border-radius: 0 !important;
-        box-shadow: none !important;
-    }
-    .MPheader, .MPfooter {
-        border-radius: 0 !important;
-    }
-}
+footer{text-align:center;margin-top:16px;padding-bottom:8px;}
+footer .powered{font-size:0.7rem;color:var(--muted);}
+footer .meta{font-size:0.6rem;color:#6b7890;margin-top:4px;}
 </style>
 </head>
 <body>
-    <div class="container">
-        <div id="muslimpro-widget-container">
-            <script type="text/javascript" src="https://www.muslimpro.com/muslimprowidget.js?cityid=2818243&amp;timeformat=12&amp;width=300" async=""></script>
-        </div>
-    </div>
+<div class="app">
+<header>
+  <h1>Prayer times for Urbach, Germany</h1>
+  <div class="sub" id="gregorian">—</div>
+  <div class="sub" id="hijri">—</div>
+</header>
+
+<div id="error" class="error"></div>
+
+<div class="date-nav">
+  <button id="prevDay">&larr;</button>
+  <input type="date" id="dateInput"/>
+  <button id="nextDay">&rarr;</button>
+</div>
+
+<div class="next-row" aria-live="polite">
+  <div>
+    <span class="label">Next prayer</span>
+    <div class="next-prayer" id="nextName">—</div>
+  </div>
+  <div>
+    <span class="label">Countdown</span>
+    <div class="countdown" id="countdown">—</div>
+  </div>
+</div>
+
+<table aria-label="Prayer times">
+  <thead><tr><th>Prayer</th><th>Time & Status</th></tr></thead>
+  <tbody id="tableBody"></tbody>
+</table>
+
+<div class="ramadan-widget" aria-live="polite">
+  <div><strong>Days until Ramadan:</strong> <span id="ramadanCountdown">—</span></div>
+  <div class="sub" id="ramadanDate">—</div>
+</div>
+
+<div class="calendar-toggle">
+  <button id="toggleCalendar">Show Monthly Calendar</button>
+</div>
+
+<div class="calendar-container" id="calendarContainer">
+  <div class="calendar-controls">
+    <select id="monthSelect"></select>
+    <select id="yearSelect"></select>
+    <button id="loadCalendar">Load</button>
+  </div>
+  <table class="calendar-table" id="calendarTable">
+    <thead>
+      <tr><th>Date</th><th>Fajr</th><th>Dhuhr</th><th>Asr</th><th>Maghrib</th><th>Isha</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <div class="calendar-legend">Times are in 12-hour format, no timezone displayed</div>
+</div>
+
+<footer>
+  <div class="powered">Powered by AlAdhan API</div>
+  <div class="meta" id="meta">Method: Muslim World League • School: Hanafi</div>
+</footer>
+</div>
+
+<script>
+const ADDRESS="Urbach, Germany", METHOD="3", SCHOOL="1";
+const PRAYER_ORDER=["Fajr","Sunrise","Dhuhr","Asr","Maghrib","Isha"];
+const PRAYERS_FOR_STATUS=["Fajr","Dhuhr","Asr","Maghrib","Isha"];
+const MONTH_NAMES=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const el={
+tableBody:document.getElementById("tableBody"),
+gregorian:document.getElementById("gregorian"),
+hijri:document.getElementById("hijri"),
+nextName:document.getElementById("nextName"),
+countdown:document.getElementById("countdown"),
+dateInput:document.getElementById("dateInput"),
+ramadanCountdown:document.getElementById("ramadanCountdown"),
+ramadanDate:document.getElementById("ramadanDate"),
+meta:document.getElementById("meta"),
+error:document.getElementById("error"),
+toggleBtn:document.getElementById("toggleCalendar"),
+calContainer:document.getElementById("calendarContainer"),
+calBody:document.querySelector("#calendarTable tbody"),
+monthSelect:document.getElementById("monthSelect"),
+yearSelect:document.getElementById("yearSelect"),
+loadBtn:document.getElementById("loadCalendar"),
+prevDay:document.getElementById("prevDay"),
+nextDay:document.getElementById("nextDay")
+};
+
+function pad(n){return n.toString().padStart(2,"0");}
+function formatAPIDate(d){return `${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()}`;}
+function formatInputDate(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;}
+function stripTZ(s){return !s?"—":s.split(" ")[0];}
+function toAmPm(t){if(!t||t==="—")return "—";const [h,m]=t.split(":").map(Number);return (h%12||12)+":"+pad(m)+(h>=12?" PM":" AM");}
+function parseTime(baseDate,timeStr){const [h,m]=timeStr.split(":").map(Number);const d=new Date(baseDate);d.setHours(h,m,0,0);return d;}
+function hms(ms){if(ms<0)ms=0;const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;return pad(h)+":"+pad(m)+":"+pad(sec);}
+function buildRow(name,time24,isCurrent,isNext){const tr=document.createElement("tr");tr.className="row"+(isCurrent?" current":"")+(isNext?" next":"");const td1=document.createElement("td");td1.textContent=name;const td2=document.createElement("td");td2.textContent=toAmPm(time24);if(isCurrent)td2.innerHTML+=`<span class="indicator">Current</span>`;else if(isNext)td2.innerHTML+=`<span class="indicator">Next</span>`;tr.append(td1,td2);return tr;}
+
+async function updateRamadanWidget(hijri){try{const y=parseInt(hijri?.year),m=hijri?.month?.number,d=parseInt(hijri?.day);const target=(m<9||(m===9&&d<1))?y:y+1;const r=await fetch(`https://api.aladhan.com/v1/hToG?date=1-9-${target}`);const g=(await r.json())?.data?.gregorian?.date;const ramG=new Date(`${g.split("-")[2]}-${g.split("-")[1]}-${g.split("-")[0]}T00:00:00`);const diff=Math.ceil((ramG-new Date())/86400000);el.ramadanCountdown.textContent=diff>0?diff:diff===0?"Today":"Started";el.ramadanDate.textContent=`Start: ${g} • 1-9-${target} Hijri`;}catch{el.ramadanCountdown.textContent="—";el.ramadanDate.textContent="Ramadan countdown unavailable";}}
+
+let countdownTimer=null;
+async function loadDaily(d){
+try{
+el.error.style.display="none";
+const r=await fetch(`https://api.aladhan.com/v1/timingsByAddress/${formatAPIDate(d)}?address=${encodeURIComponent(ADDRESS)}&method=${METHOD}&school=${SCHOOL}`);
+const data=(await r.json()).data||{};
+const timings=data.timings||{};
+const dateInfo=data.date||{};
+el.gregorian.textContent=dateInfo.readable||"—";
+const hijri=dateInfo.hijri||{};
+el.hijri.textContent=hijri.month?`Hijri: ${hijri.day} ${hijri.month.en} ${hijri.year}`:"Hijri: —";
+
+const tMap={};PRAYER_ORDER.forEach(p=>{const t=stripTZ(timings[p]);if(t!=="—") tMap[p]=parseTime(d,t);});
+
+let now=new Date(),current=null,next=null;
+for(const p of PRAYERS_FOR_STATUS){
+const t=tMap[p];if(!t) continue;
+if(now>=t) current=p; else if(!next) next=p;
+}
+if(!next){ // Isha passed, next is tomorrow's Fajr
+const tomorrow=new Date(d);tomorrow.setDate(tomorrow.getDate()+1);
+const r2=await fetch(`https://api.aladhan.com/v1/timingsByAddress/${formatAPIDate(tomorrow)}?address=${encodeURIComponent(ADDRESS)}&method=${METHOD}&school=${SCHOOL}`);
+const data2=(await r2.json()).data||{};
+const t2=stripTZ(data2.timings?.Fajr);
+if(t2 && t2!=="—") next=parseTime(tomorrow,t2);
+}
+
+el.tableBody.innerHTML="";
+PRAYER_ORDER.forEach(p=>{const t=stripTZ(timings[p]);if(t==="—")return;el.tableBody.appendChild(buildRow(p,t,p===current,p===next instanceof Date?false:p===next));});
+
+if(countdownTimer)clearInterval(countdownTimer);
+if(next){el.nextName.textContent=(next instanceof Date)?"Fajr":next;const targetTime=next instanceof Date?next:tMap[next];const tick=()=>{const diff=targetTime-new Date();el.countdown.textContent=hms(diff);};tick();countdownTimer=setInterval(tick,1000);}
+else{el.nextName.textContent="—";el.countdown.textContent="—";}
+
+el.meta.textContent="Method: Muslim World League • School: Hanafi";
+updateRamadanWidget(hijri);
+}catch(e){el.error.textContent=`Could not load timings. ${e.message||e}`;el.error.style.display="block";}
+}
+
+function populateMonthYearSelectors(){
+const now=new Date();
+MONTH_NAMES.forEach((name,i)=>{const opt=document.createElement("option");opt.value=i+1;opt.textContent=name;if(i===now.getMonth())opt.selected=true;el.monthSelect.appendChild(opt);});
+for(let y=now.getFullYear()-1;y<=now.getFullYear()+1;y++){const opt=document.createElement("option");opt.value=y;opt.textContent=y;if(y===now.getFullYear())opt.selected=true;el.yearSelect.appendChild(opt);}
+}
+
+async function loadMonthlyData(month,year){
+try{
+const r=await fetch(`https://api.aladhan.com/v1/calendarByAddress?address=${encodeURIComponent(ADDRESS)}&method=${METHOD}&school=${SCHOOL}&month=${month}&year=${year}`);
+const days=(await r.json()).data||[];
+el.calBody.innerHTML="";
+const today=new Date();
+days.forEach(day=>{
+  const tr=document.createElement("tr");
+  const gr=day.date.gregorian;
+  if(gr.day==today.getDate() && gr.month.number==today.getMonth()+1 && gr.year==today.getFullYear()) tr.classList.add("cal-today");
+  const t=day.timings;
+  const cells=[day.date.readable,t.Fajr.split(" ")[0],t.Dhuhr.split(" ")[0],t.Asr.split(" ")[0],t.Maghrib.split(" ")[0],t.Isha.split(" ")[0]];
+  cells.forEach(c=>{const td=document.createElement("td");td.textContent=c;tr.appendChild(td);});
+  el.calBody.appendChild(tr);
+});
+}catch{el.calBody.innerHTML="<tr><td colspan='6'>Monthly calendar unavailable</td></tr>";}
+}
+
+el.toggleBtn.addEventListener("click",()=>{const show=el.calContainer.style.display!=="block";el.calContainer.style.display=show?"block":"none";el.toggleBtn.textContent=show?"Hide Monthly Calendar":"Show Monthly Calendar";});
+el.loadBtn.addEventListener("click",()=>loadMonthlyData(parseInt(el.monthSelect.value),parseInt(el.yearSelect.value)));
+el.prevDay.addEventListener("click",()=>{const d=new Date(el.dateInput.value);d.setDate(d.getDate()-1);el.dateInput.value=formatInputDate(d);loadDaily(d);});
+el.nextDay.addEventListener("click",()=>{const d=new Date(el.dateInput.value);d.setDate(d.getDate()+1);el.dateInput.value=formatInputDate(d);loadDaily(d);});
+el.dateInput.addEventListener("change",()=>{if(el.dateInput.value)loadDaily(new Date(el.dateInput.value+"T00:00:00"));});
+
+populateMonthYearSelectors();
+const today=new Date();
+el.dateInput.value=formatInputDate(today);
+loadDaily(today);
+loadMonthlyData(today.getMonth()+1,today.getFullYear());
+</script>
 </body>
 </html>
