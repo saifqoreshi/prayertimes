@@ -205,7 +205,15 @@ const r=await fetch(`https://api.aladhan.com/v1/calendarByAddress?address=${enco
 const days=(await r.json()).data||[];
 el.calBody.innerHTML="";
 const today=new Date();
-days.forEach(day=>{const tr=document.createElement("tr");const readable=day.date.readable;const t=day.timings;const d=parseInt(readable.split(" ")[0]);const m=day.date.gregorian.month.number;const y=day.date.gregorian.year;if(d===today.getDate()&&m===today.getMonth()+1&&y===today.getFullYear()) tr.classList.add("cal-today");const cells=[readable,t.Fajr.split(" ")[0],t.Dhuhr.split(" ")[0],t.Asr.split(" ")[0],t.Maghrib.split(" ")[0],t.Isha.split(" ")[0]];cells.forEach(c=>{const td=document.createElement("td");td.textContent=c;tr.appendChild(td);});el.calBody.appendChild(tr);});
+days.forEach(day=>{
+  const tr=document.createElement("tr");
+  const gr=day.date.gregorian;
+  if(gr.day==today.getDate() && gr.month.number==today.getMonth()+1 && gr.year==today.getFullYear()) tr.classList.add("cal-today");
+  const t=day.timings;
+  const cells=[day.date.readable,t.Fajr.split(" ")[0],t.Dhuhr.split(" ")[0],t.Asr.split(" ")[0],t.Maghrib.split(" ")[0],t.Isha.split(" ")[0]];
+  cells.forEach(c=>{const td=document.createElement("td");td.textContent=c;tr.appendChild(td);});
+  el.calBody.appendChild(tr);
+});
 }catch{el.calBody.innerHTML="<tr><td colspan='6'>Monthly calendar unavailable</td></tr>";}
 }
 
