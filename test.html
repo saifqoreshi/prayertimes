@@ -17,10 +17,11 @@
       --radius: 12px;
       --shadow: 0 6px 18px rgba(0,0,0,0.35);
     }
+    * { box-sizing: border-box; }
     body { background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif; margin: 0; }
-    .app { max-width: 680px; margin: 0 auto; padding: 12px 16px 20px; }
+    .app { max-width: 740px; margin: 0 auto; padding: 12px 16px 24px; }
 
-    /* Header with 3 lines */
+    /* Header: three separate lines */
     header {
       position: sticky;
       top: 0;
@@ -33,6 +34,19 @@
     }
     header h1 { font-size: 1rem; margin: 0; }
     header .sub { font-size: 0.9rem; color: var(--muted); margin-top: 4px; }
+
+    /* Error banner */
+    .error {
+      color: #ff788a;
+      background: rgba(255,77,109,0.12);
+      border: 1px solid #ff4d6d;
+      border-radius: 10px;
+      padding: 8px;
+      margin: 10px 0;
+      display: none;
+      text-align: center;
+      font-size: 0.9rem;
+    }
 
     /* Date navigation */
     .date-nav { text-align: center; margin: 12px 0; }
@@ -70,19 +84,8 @@
       box-shadow: var(--shadow);
     }
     .progress-label { font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; }
-    .progress-bar {
-      width: 100%;
-      height: 10px;
-      background: #233044;
-      border-radius: 6px;
-      overflow: hidden;
-    }
-    .progress-fill {
-      height: 100%;
-      background: var(--accent-2);
-      width: 0%;
-      transition: width 0.7s ease;
-    }
+    .progress-bar { width: 100%; height: 10px; background: #233044; border-radius: 6px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--accent-2); width: 0%; transition: width 0.7s ease; }
 
     /* Table */
     table {
@@ -93,9 +96,10 @@
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       margin-bottom: 14px;
+      overflow: hidden;
     }
-    th, td { padding: 12px; border-bottom: 1px solid var(--border); text-align: center; }
-    th { color: var(--muted); font-size: 0.85rem; }
+    th, td { padding: 10px; border-bottom: 1px solid var(--border); text-align: center; font-size: 0.88rem; }
+    th { color: var(--muted); background: #0f1623; position: sticky; top: 0; }
     tr:last-child td { border-bottom: none; }
     .row.current td:nth-child(2) { color: var(--accent); font-weight: 700; background: rgba(58,163,255,0.12); }
     .row.next td:nth-child(2) { color: var(--accent-2); font-weight: 700; background: rgba(37,194,160,0.12); }
@@ -114,23 +118,32 @@
     .ramadan-widget strong { color: var(--accent-2); }
     .ramadan-widget .sub { color: var(--muted); font-size: 0.9rem; }
 
+    /* Monthly calendar */
+    .calendar-container {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-top: 16px;
+      box-shadow: var(--shadow);
+      max-height: 360px;
+      overflow-y: auto;
+    }
+    .calendar-container h2 {
+      font-size: 0.95rem; margin: 0 0 8px; color: var(--accent); text-align: center;
+    }
+    .calendar-table { width: 100%; border-collapse: collapse; }
+    .calendar-table th, .calendar-table td {
+      padding: 8px; border-bottom: 1px solid var(--border); font-size: 0.82rem; text-align: center;
+    }
+    .calendar-table th { color: var(--muted); background: #0f1623; position: sticky; top: 0; }
+    .calendar-table tr:last-child td { border-bottom: none; }
+    .cal-today { background: rgba(58,163,255,0.12); }
+
     /* Footer */
     footer { text-align: center; margin-top: 16px; padding-bottom: 8px; }
     footer .powered { font-size: 0.7rem; color: var(--muted); }
     footer .meta { font-size: 0.6rem; color: #6b7890; margin-top: 4px; }
-
-    /* Error */
-    .error {
-      color: #ff788a;
-      background: rgba(255,77,109,0.12);
-      border: 1px solid #ff4d6d;
-      border-radius: 10px;
-      padding: 8px;
-      margin: 10px 0;
-      display: none;
-      text-align: center;
-      font-size: 0.9rem;
-    }
   </style>
 </head>
 <body>
@@ -158,23 +171,36 @@
       </div>
     </div>
 
-    <!-- Day progress bar -->
     <div class="progress-container">
       <div class="progress-label">Day progress (Fajr → Isha)</div>
       <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
     </div>
 
     <table aria-label="Prayer times">
-      <thead>
-        <tr><th>Prayer</th><th>Time & Status</th></tr>
-      </thead>
+      <thead><tr><th>Prayer</th><th>Time & Status</th></tr></thead>
       <tbody id="tableBody"></tbody>
     </table>
 
-    <!-- Ramadan widget -->
     <div class="ramadan-widget" aria-live="polite">
       <div><strong>Days until Ramadan:</strong> <span id="ramadanCountdown">—</span></div>
       <div class="sub" id="ramadanDate">—</div>
+    </div>
+
+    <div class="calendar-container">
+      <h2>Monthly Prayer Calendar</h2>
+      <table class="calendar-table" id="calendarTable">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Fajr</th>
+            <th>Dhuhr</th>
+            <th>Asr</th>
+            <th>Maghrib</th>
+            <th>Isha</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
 
     <footer>
@@ -204,6 +230,7 @@
       meta: document.getElementById("meta"),
       error: document.getElementById("error"),
       progressFill: document.getElementById("progressFill"),
+      calendarTbody: document.querySelector("#calendarTable tbody"),
     };
 
     // Helpers
@@ -237,7 +264,7 @@
       return new Date(`${yyyy}-${pad(mm)}-${pad(dd)}T00:00:00`);
     }
 
-    // Ramadan widget
+    // Ramadan widget (no "estimated"/"Gregorian" wording)
     async function updateRamadanWidget(hijriInfo){
       try {
         const currentYear = parseInt(hijriInfo?.year, 10);
@@ -289,14 +316,13 @@
     let countdownTimer = null;
     let progressTimer = null;
 
-    // Load timings for a given date
+    // Load daily timings
     async function loadTimingsForDate(dateObj){
       try {
         el.error.style.display = "none";
 
         const apiDate = formatAPIDate(dateObj);
         const url = `https://api.aladhan.com/v1/timingsByAddress/${apiDate}?address=${encodeURIComponent(ADDRESS)}&method=${METHOD}&school=${SCHOOL}`;
-
         const res = await fetch(url);
         if(!res.ok) throw new Error(`API error ${res.status}`);
         const json = await res.json();
@@ -313,25 +339,24 @@
           el.hijri.textContent = "Hijri: —";
         }
 
-        // Prayer Date objects
+        // Build Date objects
         const prayerMap = {};
         PRAYER_ORDER.forEach(p => {
           const t = timings[p];
           if(t) prayerMap[p] = parseTime(dateObj, t);
         });
 
-        // Determine current and next (relative to now)
+        // Current/Next
         const now = new Date();
-        let current = null;
-        let next = null;
+        let current = null, next = null;
         for(const p of PRAYERS_FOR_STATUS){
           const t = prayerMap[p];
           if(!t) continue;
-          if(now >= t){ current = p; }
-          else if(!next){ next = p; }
+          if(now >= t) current = p;
+          else if(!next) next = p;
         }
 
-        // Build table
+        // Table
         el.tableBody.innerHTML = "";
         PRAYER_ORDER.forEach(p => {
           const time = timings[p];
@@ -340,7 +365,7 @@
           el.tableBody.appendChild(row);
         });
 
-        // Countdown (animated tick)
+        // Countdown
         if(countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
         if(next && prayerMap[next]) {
           el.nextName.textContent = next;
@@ -352,7 +377,7 @@
           el.countdown.textContent = "—";
         }
 
-        // Progress bar (updates every 30s)
+        // Progress bar
         updateProgressBar(prayerMap);
         if(progressTimer) { clearInterval(progressTimer); progressTimer = null; }
         progressTimer = setInterval(() => updateProgressBar(prayerMap), 30000);
@@ -368,17 +393,69 @@
       }
     }
 
-    // Init to today and attach handler
+    // Load monthly calendar for the month of the selected date
+    async function loadMonthlyCalendar(dateObj){
+      try {
+        const year = dateObj.getFullYear();
+        const month = dateObj.getMonth() + 1; // 1-12
+        const url = `https://api.aladhan.com/v1/calendarByAddress?address=${encodeURIComponent(ADDRESS)}&method=${METHOD}&school=${SCHOOL}&month=${month}&year=${year}`;
+        const res = await fetch(url);
+        if(!res.ok) throw new Error(`Calendar API ${res.status}`);
+        const json = await res.json();
+        const days = Array.isArray(json?.data) ? json.data : [];
+
+        el.calendarTbody.innerHTML = "";
+        const todayStr = `${pad(dateObj.getDate())}-${pad(month)}-${year}`;
+
+        days.forEach(day => {
+          const dReadable = day?.date?.readable || "";
+          const dateHijri = day?.date?.hijri;
+          const t = day?.timings || {};
+          const tr = document.createElement("tr");
+          if(day?.date?.gregorian?.date === todayStr) tr.classList.add("cal-today");
+
+          const tdDate = document.createElement("td");
+          tdDate.textContent = dReadable;
+
+          const tdFajr = document.createElement("td"); tdFajr.textContent = cleanTime(t.Fajr);
+          const tdDhuhr = document.createElement("td"); tdDhuhr.textContent = cleanTime(t.Dhuhr);
+          const tdAsr = document.createElement("td"); tdAsr.textContent = cleanTime(t.Asr);
+          const tdMaghrib = document.createElement("td"); tdMaghrib.textContent = cleanTime(t.Maghrib);
+          const tdIsha = document.createElement("td"); tdIsha.textContent = cleanTime(t.Isha);
+
+          tr.appendChild(tdDate);
+          tr.appendChild(tdFajr);
+          tr.appendChild(tdDhuhr);
+          tr.appendChild(tdAsr);
+          tr.appendChild(tdMaghrib);
+          tr.appendChild(tdIsha);
+          el.calendarTbody.appendChild(tr);
+        });
+      } catch (e) {
+        // If calendar fails, keep page usable
+        el.calendarTbody.innerHTML = `<tr><td colspan="6">Monthly calendar unavailable</td></tr>`;
+      }
+    }
+
+    // Remove timezone suffixes like " (CET)"
+    function cleanTime(s){
+      if(!s || typeof s !== "string") return "—";
+      return s.split(" ")[0]; // "HH:MM"
+    }
+
+    // Init and handlers
     (function init() {
       const today = new Date();
       el.dateInput.value = formatInputDate(today);
       loadTimingsForDate(today);
+      loadMonthlyCalendar(today);
     })();
 
     el.dateInput.addEventListener("change", () => {
       if(!el.dateInput.value) return;
       const d = new Date(el.dateInput.value + "T00:00:00");
       loadTimingsForDate(d);
+      loadMonthlyCalendar(d);
     });
   </script>
 </body>
