@@ -39,14 +39,8 @@
       color: var(--muted);
     }
 
-    /* Date navigation + next prayer */
-    .date-nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 12px 0;
-      gap: 10px;
-    }
+    /* Date navigation (own line) */
+    .date-nav { text-align: center; margin: 12px 0; }
     .date-nav input[type="date"] {
       background: var(--card);
       color: var(--text);
@@ -54,17 +48,18 @@
       border-radius: 10px;
       padding: 8px;
       font-size: 0.9rem;
-      width: 52%;
     }
+
+    /* Next prayer box (own line, full width) */
     .next-box {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 8px 12px;
+      padding: 10px;
       text-align: center;
       box-shadow: var(--shadow);
       font-size: 0.85rem;
-      width: 48%;
+      margin-bottom: 12px;
     }
     .next-box strong { display:block; font-size:0.8rem; color:var(--muted); }
     .next-box div { font-size:0.95rem; }
@@ -132,12 +127,13 @@
 
     <div class="date-nav">
       <input type="date" id="dateInput" />
-      <div class="next-box" aria-live="polite">
-        <strong>Next prayer</strong>
-        <div id="nextName">—</div>
-        <strong>Countdown</strong>
-        <div id="countdown">—</div>
-      </div>
+    </div>
+
+    <div class="next-box" aria-live="polite">
+      <strong>Next prayer</strong>
+      <div id="nextName">—</div>
+      <strong>Countdown</strong>
+      <div id="countdown">—</div>
     </div>
 
     <table aria-label="Prayer times">
@@ -322,7 +318,7 @@
           diffDays > 0 ? diffDays :
           diffDays === 0 ? "Today" :
           "Started";
-        // No "estimated" or "Gregorian" words
+        // No "estimated" or "Gregorian" wording
         el.ramadanDate.textContent = `Start: ${gDateStr} • 1-9-${targetYear} Hijri`;
       } catch (e) {
         el.ramadanCountdown.textContent = "—";
