@@ -20,7 +20,7 @@
     body { background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif; margin: 0; }
     .app { max-width: 680px; margin: 0 auto; padding: 12px 16px 20px; }
 
-    /* Sticky compact header */
+    /* Header */
     header {
       position: sticky;
       top: 0;
@@ -28,18 +28,13 @@
       background: var(--card);
       border-bottom: 1px solid var(--border);
       box-shadow: var(--shadow);
-      padding: 8px 12px;
+      padding: 10px;
+      text-align: center;
     }
-    .header-title { font-size: 1rem; font-weight: 700; text-align: center; margin: 0; }
-    .header-dates {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 4px;
-      font-size: 0.85rem;
-      color: var(--muted);
-    }
+    header h1 { font-size: 1rem; margin: 0; }
+    header .sub { font-size: 0.9rem; color: var(--muted); margin-top: 4px; }
 
-    /* Date navigation (own line) */
+    /* Date navigation */
     .date-nav { text-align: center; margin: 12px 0; }
     .date-nav input[type="date"] {
       background: var(--card);
@@ -50,19 +45,20 @@
       font-size: 0.9rem;
     }
 
-    /* Next prayer box (own line, full width) */
-    .next-box {
+    /* Next prayer row: left/right aligned */
+    .next-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 10px;
-      text-align: center;
-      box-shadow: var(--shadow);
-      font-size: 0.85rem;
       margin-bottom: 12px;
+      box-shadow: var(--shadow);
     }
-    .next-box strong { display:block; font-size:0.8rem; color:var(--muted); }
-    .next-box div { font-size:0.95rem; }
+    .next-row .label { font-size: 0.85rem; color: var(--muted); }
+    .next-row .value { font-size: 0.95rem; font-weight: 600; }
 
     /* Table */
     table {
@@ -116,11 +112,9 @@
 <body>
   <div class="app">
     <header>
-      <div class="header-title">Prayer times Gosheim Germany</div>
-      <div class="header-dates">
-        <span id="gregorian">—</span>
-        <span id="hijri">—</span>
-      </div>
+      <h1>Prayer times for Gosheim, Germany</h1>
+      <div class="sub" id="gregorian">—</div>
+      <div class="sub" id="hijri">—</div>
     </header>
 
     <div id="error" class="error"></div>
@@ -129,11 +123,15 @@
       <input type="date" id="dateInput" />
     </div>
 
-    <div class="next-box" aria-live="polite">
-      <strong>Next prayer</strong>
-      <div id="nextName">—</div>
-      <strong>Countdown</strong>
-      <div id="countdown">—</div>
+    <div class="next-row" aria-live="polite">
+      <div>
+        <span class="label">Next prayer</span>
+        <div class="value" id="nextName">—</div>
+      </div>
+      <div>
+        <span class="label">Countdown</span>
+        <div class="value" id="countdown">—</div>
+      </div>
     </div>
 
     <table aria-label="Prayer times">
@@ -218,15 +216,15 @@
         const dateInfo = data?.date || {};
         const hijri = dateInfo?.hijri;
 
-        // Header dates
+        // Header dates (exact format: separate lines)
         el.gregorian.textContent = dateInfo?.readable || "—";
         if(hijri && hijri.month) {
-          el.hijri.textContent = `${hijri.day} ${hijri.month.en} ${hijri.year}`;
+          el.hijri.textContent = `Hijri: ${hijri.day} ${hijri.month.en} ${hijri.year}`;
         } else {
-          el.hijri.textContent = "—";
+          el.hijri.textContent = "Hijri: —";
         }
 
-        // Prayer Date objects
+        // Build Date objects for prayers
         const prayerDateMap = {};
         PRAYER_ORDER.forEach(p => {
           const t = timings[p];
@@ -241,7 +239,7 @@
           const t = prayerDateMap[p];
           if(!t) continue;
           if(now >= t){
-            current = p;        // last started prayer becomes current
+            current = p;        // most recent started prayer
           } else if(!next){
             next = p;           // first upcoming prayer
           }
@@ -256,7 +254,7 @@
           el.tableBody.appendChild(row);
         });
 
-        // Countdown (if next exists)
+        // Next prayer countdown
         if(countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
         if(next && prayerDateMap[next]) {
           el.nextName.textContent = next;
@@ -326,7 +324,7 @@
       }
     }
 
-    // Initialize date input to today (local)
+    // Initialize to today and load
     (function init() {
       const today = new Date();
       el.dateInput.value = formatInputDate(today);
