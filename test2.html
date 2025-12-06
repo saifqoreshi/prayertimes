@@ -1,498 +1,335 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Prayer Times – Gosheim, Germany</title>
-  <meta name="theme-color" content="#0b0f14" />
-  <style>
-    :root {
-      --bg:#0b0f14; --card:#111722; --text:#e6edf3; --muted:#9fb0c0;
-      --accent:#3aa3ff; --accent2:#25c2a0; --border:#233044; --radius:12px;
-      --shadow:0 6px 18px rgba(0,0,0,0.35);
-    }
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-    .app{max-width:740px;margin:0 auto;padding:12px 16px 24px}
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Prayer Times</title>
 
-    /* Header */
-    header{
-      position:sticky;top:0;z-index:1000;background:var(--card);
-      border-bottom:1px solid var(--border);box-shadow:var(--shadow);
-      padding:10px;text-align:left
-    }
-    header h1{margin:0;font-size:1rem}
-    header .sub{margin-top:4px;font-size:0.9rem;color:var(--muted)}
+<style>
+  :root {
+    --bg: #f0f0f0;
+    --card: #ffffff;
+    --border: #dddddd;
+    --text: #333333;
+    --accent: #2b7cff;
+    --shadow: 0 2px 6px rgba(0,0,0,0.12);
+  }
 
-    /* Error */
-    .error{display:none;color:#ff788a;background:rgba(255,77,109,0.12);
-      border:1px solid #ff4d6d;border-radius:10px;padding:8px;margin:10px 0;
-      text-align:center;font-size:0.9rem}
+  body {
+    background: var(--bg);
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    color: var(--text);
+  }
 
-    /* Date nav */
-    .date-nav{text-align:center;margin:12px 0;display:flex;justify-content:center;gap:6px;align-items:center}
-    .date-nav button{
-      background:var(--card);color:var(--text);border:1px solid var(--border);
-      border-radius:10px;padding:8px 12px;cursor:pointer;font-size:0.9rem;
-      box-shadow:var(--shadow)
-    }
-    .date-nav button:hover{background:var(--accent);color:#fff}
-    .date-nav input[type="date"]{
-      background:var(--card);color:var(--text);border:1px solid var(--border);
-      border-radius:10px;padding:8px;font-size:0.9rem
-    }
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
 
-    /* Next prayer */
-    .next-row{
-      display:flex;justify-content:space-between;align-items:center;
-      background:var(--card);border:1px solid var(--border);
-      border-radius:var(--radius);padding:10px;margin-bottom:12px;
-      box-shadow:var(--shadow)
-    }
-    .next-row .label{font-size:0.85rem;color:var(--muted)}
-    .next-row .value{font-size:1rem;font-weight:600}
+  .container {
+    max-width: 900px;
+    margin: auto;
+  }
 
-    /* Table */
-    table{
-      width:100%;border-collapse:collapse;background:var(--card);
-      border:1px solid var(--border);border-radius:var(--radius);
-      box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden
-    }
-    th,td{padding:10px;border-bottom:1px solid var(--border);
-      text-align:center;font-size:0.88rem}
-    th{color:var(--muted);background:#0f1623}
-    tr:last-child td{border-bottom:none}
-    .row.current td:nth-child(2){
-      color:var(--accent);font-weight:700;background:rgba(58,163,255,0.12)
-    }
-    .row.next td:nth-child(2){
-      color:var(--accent2);font-weight:700;background:rgba(37,194,160,0.12)
-    }
-    .indicator{display:block;font-size:0.72rem;margin-top:4px}
+  /* DAILY CARD */
+  .card {
+    background: var(--card);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+  }
 
-    /* Ramadan */
-    .ramadan-widget{
-      background:var(--card);border:1px solid var(--border);
-      border-radius:var(--radius);padding:12px;margin-top:14px;
-      text-align:center;box-shadow:var(--shadow)
-    }
-    .ramadan-widget strong{color:var(--accent2)}
-    .ramadan-widget .sub{color:var(--muted);font-size:0.9rem}
+  .date-nav {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+    align-items: center;
+    gap: 10px;
+  }
 
-    /* Calendar dropdowns */
-    .calendar-toggle{
-      text-align:center;margin:12px 0;display:flex;
-      justify-content:center;gap:10px
-    }
-    .calendar-toggle select{
-      background:var(--card);color:var(--text);border:1px solid var(--border);
-      border-radius:10px;padding:8px;font-size:0.9rem;box-shadow:var(--shadow)
-    }
+  .date-nav button {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 7px 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    box-shadow: var(--shadow);
+  }
 
-    /* Calendar */
-    .calendar-container{
-      background:var(--card);border:1px solid var(--border);
-      border-radius:var(--radius);padding:12px;margin-top:16px;
-      box-shadow:var(--shadow);max-height:360px;overflow-y:auto
-    }
-    .calendar-container h2{
-      font-size:0.95rem;margin:0 0 8px;color:var(--accent);text-align:center
-    }
-    .calendar-table{width:100%;border-collapse:collapse}
-    .calendar-table th,.calendar-table td{
-      padding:8px;border-bottom:1px solid var(--border);
-      font-size:0.82rem;text-align:center
-    }
-    .calendar-table th{color:var(--muted);background:#0f1623}
-    .calendar-table tr:last-child td{border-bottom:none}
-    .cal-today{background:rgba(58,163,255,0.12)}
+  .date-nav button:hover {
+    background: var(--accent);
+    color: #fff;
+  }
 
-    /* Audio */
-    .audio-controls{text-align:center;margin:12px 0}
-    .audio-controls button{
-      background:var(--card);color:var(--text);
-      border:2px solid var(--accent);border-radius:var(--radius);
-      padding:8px 14px;cursor:pointer;font-size:0.9rem;font-weight:600;
-      box-shadow:var(--shadow);transition:background 0.25s,color 0.25s;
-      margin:4px
-    }
-    .audio-controls button:hover{background:var(--accent);color:#fff}
+  .day-times {
+    width: 100%;
+    border-collapse: collapse;
+  }
 
-    /* Footer */
-    footer{text-align:center;margin-top:16px;padding-bottom:8px}
-    footer .powered{font-size:0.7rem;color:var(--muted)}
-    footer .meta{font-size:0.6rem;color:#6b7890;margin-top:4px}
-  </style>
+  .day-times td {
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* MONTHLY */
+  .calendar-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  select {
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  #calendarWrapper {
+    margin-top: 15px;
+    display: none; /* Hidden initially */
+  }
+
+  .month-table {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: var(--shadow);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .month-table th, .month-table td {
+    padding: 10px;
+    border: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .legend {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #555;
+    text-align: center;
+  }
+
+  /* TOGGLE BUTTON */
+  #toggleCalendar {
+    display: block;
+    margin: 0 auto 20px auto;
+    padding: 10px 15px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    font-size: 1rem;
+  }
+
+  #toggleCalendar:hover {
+    background: #1a5ed7;
+  }
+</style>
 </head>
+
 <body>
-  <div class="app">
-    <header>
-      <h1>Prayer times for Gosheim, Germany</h1>
-      <div class="sub" id="gregorian">—</div>
-      <div class="sub" id="hijri">—</div>
-    </header>
+<div class="container">
 
-    <div id="error" class="error"></div>
+  <h1>Prayer Times</h1>
 
-    <!-- Date navigation -->
+  <!-- DAILY CARD -->
+  <div class="card">
     <div class="date-nav">
       <button id="prevDay">←</button>
-      <input type="date" id="dateInput" />
+      <input type="date" id="dateInput">
       <button id="nextDay">→</button>
     </div>
 
-    <div class="next-row" aria-live="polite">
-      <div>
-        <span class="label">Next prayer</span>
-        <div class="value" id="nextName">—</div>
-      </div>
-      <div>
-        <span class="label">Countdown</span>
-        <div class="value" id="countdown">—</div>
-      </div>
-    </div>
-
-    <table aria-label="Prayer times">
-      <thead><tr><th>Prayer</th><th>Time & Status</th></tr></thead>
-      <tbody id="tableBody"></tbody>
+    <table class="day-times" id="dailyTable">
+      <tbody></tbody>
     </table>
+  </div>
 
-    <div class="ramadan-widget" aria-live="polite">
-      <div><strong>Days until Ramadan:</strong> <span id="ramadanCountdown">—</span></div>
-      <div class="sub" id="ramadanDate">—</div>
-    </div>
+  <!-- MONTHLY TOGGLE -->
+  <button id="toggleCalendar">Show Monthly Calendar</button>
 
-    <!-- Calendar month & year dropdowns -->
-    <div class="calendar-toggle">
+  <!-- MONTHLY SECTION -->
+  <div id="calendarWrapper">
+    <div class="calendar-controls">
       <select id="monthSelect"></select>
       <select id="yearSelect"></select>
     </div>
 
-    <div class="calendar-container" id="calendarContainer">
-      <h2>Monthly Prayer Calendar</h2>
-      <table class="calendar-table" id="calendarTable">
-        <thead>
-          <tr><th>Date</th><th>Fajr</th><th>Dhuhr</th><th>Asr</th><th>Maghrib</th><th>Isha</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+    <table class="month-table" id="monthlyTable"></table>
 
-    <div class="audio-controls">
-      <button id="muteBtn">Mute Adhan</button>
-      <button id="testBtn">Test Adhan</button>
-    </div>
-
-    <audio id="adhanAudio" src="https://cdn.islamic.network/adhan/mp3/adhan.mp3" preload="auto"></audio>
-
-    <footer>
-      <div class="powered">Powered by AlAdhan API</div>
-      <div class="meta" id="meta">Method: Muslim World League • School: Hanafi</div>
-    </footer>
+    <div class="legend">Times shown are in 12-hour format.</div>
   </div>
 
-  <script>
-    /* ------------------------ CONFIG ------------------------ */
-    const ADDRESS="Gosheim, Germany", METHOD="3", SCHOOL="1";
-    const PRAYER_ORDER=["Fajr","Sunrise","Dhuhr","Asr","Maghrib","Isha"];
-    const PRAYERS_FOR_STATUS=["Fajr","Dhuhr","Asr","Maghrib","Isha"];
+</div>
 
-    /* ------------------------ ELEMENTS ------------------------ */
-    const el={
-      tableBody:document.getElementById("tableBody"),
-      gregorian:document.getElementById("gregorian"),
-      hijri:document.getElementById("hijri"),
-      nextName:document.getElementById("nextName"),
-      countdown:document.getElementById("countdown"),
-      dateInput:document.getElementById("dateInput"),
-      ramadanCountdown:document.getElementById("ramadanCountdown"),
-      ramadanDate:document.getElementById("ramadanDate"),
-      meta:document.getElementById("meta"),
-      error:document.getElementById("error"),
-      calContainer:document.getElementById("calendarContainer"),
-      calBody:document.querySelector("#calendarTable tbody"),
-      monthSelect:document.getElementById("monthSelect"),
-      yearSelect:document.getElementById("yearSelect"),
-      adhanAudio:document.getElementById("adhanAudio"),
-      muteBtn:document.getElementById("muteBtn"),
-      testBtn:document.getElementById("testBtn"),
-      prevDay:document.getElementById("prevDay"),
-      nextDay:document.getElementById("nextDay")
-    };
+<script>
+  /* ------------------------
+       ELEMENT SHORTCUTS
+  ------------------------- */
+  const el = {
+    dateInput: document.getElementById("dateInput"),
+    prevDay: document.getElementById("prevDay"),
+    nextDay: document.getElementById("nextDay"),
+    dailyTable: document.getElementById("dailyTable").querySelector("tbody"),
+    monthSelect: document.getElementById("monthSelect"),
+    yearSelect: document.getElementById("yearSelect"),
+    calendarWrapper: document.getElementById("calendarWrapper"),
+    toggleCalendar: document.getElementById("toggleCalendar"),
+    monthlyTable: document.getElementById("monthlyTable")
+  };
 
-    /* ------------------------ UTILITIES ------------------------ */
-    const pad=n=>String(n).padStart(2,"0");
-    const formatAPIDate=d=>`${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()}`;
-    const formatInputDate=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-    const stripTZ=s=>!s? "—" : s.split(" ")[0];
+  /* ------------------------
+        HELPER FUNCTIONS
+  ------------------------- */
+  const formatInputDate = d =>
+    d.toISOString().split("T")[0];
 
-    function toAmPm(timeStr){
-      if(!timeStr || timeStr==="—") return "—";
-      const [hhStr, mmStr] = timeStr.split(":");
-      let hh = parseInt(hhStr, 10);
-      const mm = mmStr;
-      const suffix = hh >= 12 ? "PM" : "AM";
-      hh = hh % 12; if(hh === 0) hh = 12;
-      return `${hh}:${mm} ${suffix}`;
-    }
+  const to12h = timeStr => {
+    const [h, m] = timeStr.split(":").map(Number);
+    const suffix = h >= 12 ? "PM" : "AM";
+    const hh = ((h + 11) % 12 + 1);
+    return `${hh}:${m.toString().padStart(2,"0")} ${suffix}`;
+  };
 
-    function parseTime(baseDate, timeStr){
-      const [hh, mm] = timeStr.split(":").map(Number);
-      const d = new Date(baseDate);
-      d.setHours(hh, mm, 0, 0);
-      return d;
-    }
+  /* ------------------------
+        LOAD DAILY TIMES
+  ------------------------- */
+  async function loadDaily(dateObj) {
+    const dateStr = formatInputDate(dateObj);
 
-    function hms(ms){
-      if(ms < 0) ms = 0;
-      const s = Math.floor(ms/1000);
-      const h = Math.floor(s/3600);
-      const m = Math.floor((s%3600)/60);
-      const ss = s%60;
-      return `${pad(h)}:${pad(m)}:${pad(ss)}`;
-    }
+    const res = await fetch(`/today-times?date=${dateStr}`);
+    const times = await res.json();
 
-    function buildRow(name,time24,isCurrent,isNext){
-      const time12 = toAmPm(time24);
-      const tr = document.createElement("tr");
-      tr.className = "row" + (isCurrent?" current":"") + (isNext?" next":"");
-      const td1 = document.createElement("td"); td1.textContent = name;
-      const td2 = document.createElement("td"); td2.textContent = time12;
-      if(isCurrent) td2.innerHTML += `<span class="indicator">Current</span>`;
-      else if(isNext) td2.innerHTML += `<span class="indicator">Next</span>`;
-      tr.append(td1, td2);
-      return tr;
-    }
+    el.dailyTable.innerHTML = `
+      <tr><td>Fajr</td><td>${to12h(times.fajr)}</td></tr>
+      <tr><td>Dhuhr</td><td>${to12h(times.dhuhr)}</td></tr>
+      <tr><td>Asr</td><td>${to12h(times.asr)}</td></tr>
+      <tr><td>Maghrib</td><td>${to12h(times.maghrib)}</td></tr>
+      <tr><td>Isha</td><td>${to12h(times.isha)}</td></tr>
+    `;
+  }
 
-    /* ------------------------ RAMADAN ------------------------ */
-    async function updateRamadanWidget(hijriInfo){
-      try{
-        const y = parseInt(hijriInfo?.year,10);
-        const m = hijriInfo?.month?.number;
-        const d = parseInt(hijriInfo?.day,10);
-        let target = (!isNaN(y) && typeof m==="number" && !isNaN(d))
-          ? (m<9 || (m===9 && d<1) ? y : y+1)
-          : new Date().getFullYear();
-        const r = await fetch(`https://api.aladhan.com/v1/hToG?date=1-9-${target}`);
-        if(!r.ok) throw new Error(`Ramadan API ${r.status}`);
-        const g = (await r.json())?.data?.gregorian?.date;
-        if(!g) throw new Error("Missing Ramadan date");
-        const ramG = new Date(`${g.split("-")[2]}-${g.split("-")[1]}-${g.split("-")[0]}T00:00:00`);
-        const diff = Math.ceil((ramG - new Date())/86400000);
-        el.ramadanCountdown.textContent = diff>0 ? diff : diff===0 ? "Today" : "Started";
-        el.ramadanDate.textContent = `Start: ${g} • 1-9-${target} Hijri`;
-      }catch(e){
-        el.ramadanCountdown.textContent="—";
-        el.ramadanDate.textContent="Ramadan countdown unavailable";
-      }
-    }
+  /* ------------------------
+        LOAD MONTHLY TABLE
+  ------------------------- */
+  async function loadMonthly(dateObj) {
+    const year = dateObj.getFullYear();
+    const month = dateObj.getMonth() + 1;
 
-    /* ------------------------ ADHAN ------------------------ */
-    let adhanMuted = false;
-    el.muteBtn.addEventListener("click",()=>{
-      adhanMuted = !adhanMuted;
-      el.muteBtn.textContent = adhanMuted ? "Unmute Adhan" : "Mute Adhan";
-      el.adhanAudio.muted = adhanMuted;
-    });
-    el.testBtn.addEventListener("click",()=>{
-      el.adhanAudio.currentTime = 0;
-      el.adhanAudio.play().catch(err=>console.warn("Playback blocked:",err));
+    const res = await fetch(`/month-times?year=${year}&month=${month}`);
+    const data = await res.json();
+
+    // Build table
+    let html = `
+      <tr>
+        <th>Date</th>
+        <th>Fajr</th>
+        <th>Dhuhr</th>
+        <th>Asr</th>
+        <th>Maghrib</th>
+        <th>Isha</th>
+      </tr>
+    `;
+
+    data.forEach(row => {
+      html += `
+        <tr>
+          <td>${row.date}</td>
+          <td>${row.fajr.split(" ")[0]}</td>
+          <td>${row.dhuhr.split(" ")[0]}</td>
+          <td>${row.asr.split(" ")[0]}</td>
+          <td>${row.maghrib.split(" ")[0]}</td>
+          <td>${row.isha.split(" ")[0]}</td>
+        </tr>
+      `;
     });
 
-    let lastPlayedKey = null;
-    async function playAdhanOnce(key){
-      if(adhanMuted) return;
-      if(lastPlayedKey === key) return;
-      lastPlayedKey = key;
-      try{
-        await el.adhanAudio.play();
-      }catch(err){console.warn("Adhan playback blocked:", err);}
+    el.monthlyTable.innerHTML = html;
+  }
+
+  /* ------------------------
+        DATE NAV BUTTONS
+  ------------------------- */
+  el.prevDay.addEventListener("click", () => {
+    const d = new Date(el.dateInput.value);
+    d.setDate(d.getDate() - 1);
+    el.dateInput.value = formatInputDate(d);
+    loadDaily(d);
+  });
+
+  el.nextDay.addEventListener("click", () => {
+    const d = new Date(el.dateInput.value);
+    d.setDate(d.getDate() + 1);
+    el.dateInput.value = formatInputDate(d);
+    loadDaily(d);
+  });
+
+  /* ------------------------
+        CALENDAR TOGGLE
+  ------------------------- */
+  el.toggleCalendar.addEventListener("click", () => {
+    const isOpen = el.calendarWrapper.style.display === "block";
+    el.calendarWrapper.style.display = isOpen ? "none" : "block";
+    el.toggleCalendar.textContent = isOpen ? "Show Monthly Calendar" : "Hide Monthly Calendar";
+  });
+
+  /* ------------------------
+        MONTH/YEAR CHANGE
+  ------------------------- */
+  el.monthSelect.addEventListener("change", () => {
+    const y = parseInt(el.yearSelect.value);
+    const m = parseInt(el.monthSelect.value);
+    loadMonthly(new Date(y, m - 1, 1));
+  });
+
+  el.yearSelect.addEventListener("change", () => {
+    const y = parseInt(el.yearSelect.value);
+    const m = parseInt(el.monthSelect.value);
+    loadMonthly(new Date(y, m - 1, 1));
+  });
+
+  /* ------------------------
+        INITIAL SETUP
+  ------------------------- */
+  (function init() {
+    const today = new Date();
+    el.dateInput.value = formatInputDate(today);
+
+    // Populate month dropdown
+    const months = ["January","February","March","April","May","June",
+                    "July","August","September","October","November","December"];
+
+    months.forEach((m,i) => {
+      const opt = document.createElement("option");
+      opt.value = i + 1;
+      opt.textContent = m;
+      el.monthSelect.appendChild(opt);
+    });
+
+    // Populate years
+    const year = today.getFullYear();
+    for(let y = year - 5; y <= year + 5; y++){
+      const opt = document.createElement("option");
+      opt.value = y;
+      opt.textContent = y;
+      el.yearSelect.appendChild(opt);
     }
 
-    /* ------------------------ DAILY LOADER ------------------------ */
-    let countdownTimer=null;
-    async function loadDaily(dateObj){
-      try{
-        el.error.style.display="none";
-        const r = await fetch(`https://api.aladhan.com/v1/timingsByAddress/${formatAPIDate(dateObj)}?address=${encodeURIComponent(ADDRESS)}&method=${METHOD}&school=${SCHOOL}`);
-        if(!r.ok) throw new Error(`API ${r.status}`);
-        const payload = await r.json();
-        const data = payload?.data || {};
-        const timings = data.timings || {};
-        const dateInfo = data.date || {};
-        const hijri = dateInfo.hijri;
+    el.monthSelect.value = today.getMonth() + 1;
+    el.yearSelect.value = today.getFullYear();
 
-        el.gregorian.textContent = dateInfo.readable || "—";
-        el.hijri.textContent = hijri && hijri.month ? `Hijri: ${hijri.day} ${hijri.month.en} ${hijri.year}` : "Hijri: —";
+    loadDaily(today);
+    loadMonthly(today);
+  })();
+</script>
 
-        const tMap = {};
-        PRAYER_ORDER.forEach(p=>{
-          const t24 = stripTZ(timings[p]);
-          if(t24 && t24 !== "—") tMap[p] = parseTime(dateObj, t24);
-        });
-
-        const now = new Date(); let current=null, next=null;
-        for(const p of PRAYERS_FOR_STATUS){
-          const t = tMap[p]; if(!t) continue;
-          if(now >= t) current = p; else if(!next) next = p;
-        }
-
-        el.tableBody.innerHTML = "";
-        PRAYER_ORDER.forEach(p=>{
-          const t24 = stripTZ(timings[p]);
-          if(!t24) return;
-          el.tableBody.appendChild(buildRow(p, t24, p===current, p===next));
-        });
-
-        if(countdownTimer) clearInterval(countdownTimer);
-        if(next && tMap[next]){
-          el.nextName.textContent = next;
-          const target = tMap[next];
-          const playbackKey = `${dateObj.toDateString()}_${next}`;
-          const tick = () => {
-            const diff = target - new Date();
-            if(diff <= 0){
-              el.countdown.textContent = "00:00:00";
-              clearInterval(countdownTimer);
-              playAdhanOnce(playbackKey);
-            } else {
-              el.countdown.textContent = hms(diff);
-            }
-          };
-          tick();
-          countdownTimer = setInterval(tick, 1000);
-        }else{
-          el.nextName.textContent = "—";
-          el.countdown.textContent = "—";
-        }
-
-        el.meta.textContent = "Method: Muslim World League • School: Hanafi";
-
-        updateRamadanWidget(hijri);
-      }catch(e){
-        el.error.textContent = `Could not load timings. ${e.message||e}`;
-        el.error.style.display = "block";
-      }
-    }
-
-    /* ------------------------ MONTHLY LOADER ------------------------ */
-    function toAmPmSafe(s){ return toAmPm(stripTZ(s)); }
-
-    async function loadMonthly(dateObj){
-      try{
-        const y = dateObj.getFullYear(), m = dateObj.getMonth()+1;
-        const r = await fetch(`https://api.aladhan.com/v1/calendarByAddress?address=${encodeURIComponent(ADDRESS)}&method=${METHOD}&school=${SCHOOL}&month=${m}&year=${y}`);
-        if(!r.ok) throw new Error(`Calendar API ${r.status}`);
-        const days = (await r.json())?.data || [];
-        el.calBody.innerHTML = "";
-        const todayStr = `${pad(dateObj.getDate())}-${pad(m)}-${y}`;
-        days.forEach(day=>{
-          const gr = day?.date?.gregorian?.date || "";
-          const readable = day?.date?.readable || "";
-          const t = day?.timings || {};
-          const tr = document.createElement("tr");
-          if(gr === todayStr) tr.classList.add("cal-today");
-          const cells = [
-            readable,
-            toAmPmSafe(t.Fajr),
-            toAmPmSafe(t.Dhuhr),
-            toAmPmSafe(t.Asr),
-            toAmPmSafe(t.Maghrib),
-            toAmPmSafe(t.Isha),
-          ];
-          cells.forEach(val=>{ const td=document.createElement("td"); td.textContent=val; tr.appendChild(td); });
-          el.calBody.appendChild(tr);
-        });
-      }catch(e){
-        el.calBody.innerHTML = `<tr><td colspan="6">Monthly calendar unavailable</td></tr>`;
-      }
-    }
-
-    /* ------------------------ DATE NAVIGATION ------------------------ */
-    el.prevDay.addEventListener("click",()=>{
-      const d = new Date(el.dateInput.value);
-      d.setDate(d.getDate() - 1);
-      el.dateInput.value = formatInputDate(d);
-      loadDaily(d);
-      loadMonthly(d);
-    });
-
-    el.nextDay.addEventListener("click",()=>{
-      const d = new Date(el.dateInput.value);
-      d.setDate(d.getDate() + 1);
-      el.dateInput.value = formatInputDate(d);
-      loadDaily(d);
-      loadMonthly(d);
-    });
-
-    el.dateInput.addEventListener("change",()=>{
-      if(!el.dateInput.value) return;
-      const d = new Date(el.dateInput.value+"T00:00:00");
-      loadDaily(d);
-      loadMonthly(d);
-      el.monthSelect.value = d.getMonth()+1;
-      el.yearSelect.value = d.getFullYear();
-    });
-
-    /* ------------------------ CALENDAR DROPDOWNS ------------------------ */
-    el.monthSelect.addEventListener("change",()=>{
-      const y = parseInt(el.yearSelect.value, 10);
-      const m = parseInt(el.monthSelect.value, 10);
-      loadMonthly(new Date(y, m - 1, 1));
-    });
-
-    el.yearSelect.addEventListener("change",()=>{
-      const y = parseInt(el.yearSelect.value, 10);
-      const m = parseInt(el.monthSelect.value, 10);
-      loadMonthly(new Date(y, m - 1, 1));
-    });
-
-    /* ------------------------ INIT ------------------------ */
-    (function(){
-      const today = new Date();
-      el.dateInput.value = formatInputDate(today);
-
-      // Populate month names
-      const monthNames = [
-        "January","February","March","April","May","June",
-        "July","August","September","October","November","December"
-      ];
-      monthNames.forEach((m, i)=>{
-        const opt = document.createElement("option");
-        opt.value = i + 1;
-        opt.textContent = m;
-        el.monthSelect.appendChild(opt);
-      });
-
-      // Populate years (range around current)
-      const currentYear = today.getFullYear();
-      for(let y=currentYear-5; y<=currentYear+5; y++){
-        const opt = document.createElement("option");
-        opt.value = y;
-        opt.textContent = y;
-        el.yearSelect.appendChild(opt);
-      }
-
-      el.monthSelect.value = today.getMonth()+1;
-      el.yearSelect.value = today.getFullYear();
-
-      loadDaily(today);
-      loadMonthly(today);
-    })();
-
-  </script>
 </body>
 </html>
-
-
----
-
-If you want, Saif, I can also:
-
-✨ Add Hijri-based month navigation
-✨ Add animations for transitions
-✨ Add a clean light mode toggle
-✨ Add better mobile layout with swipe left/right for dates
-
-Just tell me what you want next!
