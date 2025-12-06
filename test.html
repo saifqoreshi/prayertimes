@@ -46,7 +46,7 @@
     .ramadan-widget strong{color:var(--accent2)}
     .ramadan-widget .sub{color:var(--muted);font-size:0.9rem}
 
-    /* Monthly calendar toggle button (dark-mode compatible, actionable outline) */
+    /* Monthly calendar toggle button (dark-mode, actionable outline) */
     .calendar-toggle{text-align:center;margin:12px 0}
     .calendar-toggle button{
       background:var(--card);
@@ -60,14 +60,8 @@
       box-shadow:var(--shadow);
       transition:background 0.25s,color 0.25s,border-color 0.25s,transform 0.1s;
     }
-    .calendar-toggle button:hover{
-      background:var(--accent);
-      color:#fff;
-      border-color:var(--accent2);
-    }
-    .calendar-toggle button:active{
-      transform:scale(0.98);
-    }
+    .calendar-toggle button:hover{background:var(--accent);color:#fff;border-color:var(--accent2)}
+    .calendar-toggle button:active{transform:scale(0.98)}
 
     /* Monthly calendar */
     .calendar-container{display:none;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-top:16px;box-shadow:var(--shadow);max-height:360px;overflow-y:auto}
@@ -77,6 +71,22 @@
     .calendar-table th{color:var(--muted);background:#0f1623;position:sticky;top:0}
     .calendar-table tr:last-child td{border-bottom:none}
     .cal-today{background:rgba(58,163,255,0.12)}
+
+    /* Audio controls */
+    .audio-controls{text-align:center;margin:12px 0}
+    .audio-controls button{
+      background:var(--card);
+      color:var(--text);
+      border:2px solid var(--accent);
+      border-radius:var(--radius);
+      padding:8px 14px;
+      cursor:pointer;
+      font-size:0.9rem;
+      font-weight:600;
+      box-shadow:var(--shadow);
+      transition:background 0.25s,color 0.25s,border-color 0.25s;
+    }
+    .audio-controls button:hover{background:var(--accent);color:#fff;border-color:var(--accent2)}
 
     /* Footer */
     footer{text-align:center;margin-top:16px;padding-bottom:8px}
@@ -132,6 +142,12 @@
       </table>
     </div>
 
+    <div class="audio-controls">
+      <button id="muteBtn">Mute Adhan</button>
+    </div>
+    <!-- Adhan audio (replace src with your preferred file if needed) -->
+    <audio id="adhanAudio" src="https://cdn.islamic.network/adhan/mp3/adhan.mp3" preload="auto"></audio>
+
     <footer>
       <div class="powered">Powered by AlAdhan API</div>
       <div class="meta" id="meta">Method: Muslim World League • School: Hanafi</div>
@@ -159,6 +175,8 @@
       toggleBtn:document.getElementById("toggleCalendar"),
       calContainer:document.getElementById("calendarContainer"),
       calBody:document.querySelector("#calendarTable tbody"),
+      adhanAudio:document.getElementById("adhanAudio"),
+      muteBtn:document.getElementById("muteBtn"),
     };
 
     // Utils
@@ -232,6 +250,28 @@
       }
     }
 
+    // Audio controls
+    let adhanMuted = false;
+    el.muteBtn.addEventListener("click",()=>{
+      adhanMuted = !adhanMuted;
+      el.muteBtn.textContent = adhanMuted ? "Unmute Adhan" : "Mute Adhan";
+      el.adhanAudio.muted = adhanMuted;
+    });
+
+    // Play adhan (with safety against multiple plays)
+    let lastPlayedKey = null;
+    async function playAdhanOnce(key){
+      if(adhanMuted) return;
+      if(lastPlayedKey === key) return;
+      lastPlayedKey = key;
+      try{
+        await el.adhanAudio.play();
+      }catch(err){
+        // Playback may be blocked until user interaction
+        console.warn("Adhan playback blocked:", err);
+      }
+    }
+
     // Daily loader
     let countdownTimer=null;
     async function loadDaily(dateObj){
@@ -270,12 +310,24 @@
           el.tableBody.appendChild(buildRow(p, t24, p===current, p===next));
         });
 
-        // Countdown
+        // Countdown (plays adhan when reaches 0)
         if(countdownTimer) clearInterval(countdownTimer);
         if(next && tMap[next]){
           el.nextName.textContent = next;
-          const tick = () => el.countdown.textContent = hms(tMap[next]-new Date());
-          tick(); countdownTimer = setInterval(tick, 1000);
+          const target = tMap[next];
+          const playbackKey = `${dateObj.toDateString()}_${next}`;
+          const tick = () => {
+            const diff = target - new Date();
+            if(diff <= 0){
+              el.countdown.textContent = "00:00:00";
+              clearInterval(countdownTimer);
+              playAdhanOnce(playbackKey);
+            } else {
+              el.countdown.textContent = hms(diff);
+            }
+          };
+          tick();
+          countdownTimer = setInterval(tick, 1000);
         }else{
           el.nextName.textContent = "—";
           el.countdown.textContent = "—";
