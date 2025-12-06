@@ -7,34 +7,32 @@
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #f9f9f9;
+      background: #121212;
+      color: #e0e0e0;
       margin: 0;
       padding: 20px;
     }
     .container {
-      max-width: 600px;
+      max-width: 700px;
       margin: auto;
-      background: #fff;
+      background: #1e1e1e;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-shadow: 0 0 10px rgba(255,255,255,0.05);
     }
-    h2 {
-      text-align: center;
-      margin-bottom: 5px;
-    }
-    .subtitle {
-      text-align: center;
-      font-size: 14px;
-      color: #666;
+    .header {
       margin-bottom: 20px;
+    }
+    .header div {
+      margin-bottom: 5px;
+      font-size: 16px;
     }
     .date-controls {
       display: flex;
       justify-content: center;
       align-items: center;
       gap: 10px;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
     }
     .date-controls button {
       background: #007BFF;
@@ -47,6 +45,10 @@
     .date-controls input {
       padding: 6px;
       font-size: 14px;
+      background: #2c2c2c;
+      color: #e0e0e0;
+      border: 1px solid #444;
+      border-radius: 4px;
     }
     .prayer-table {
       width: 100%;
@@ -55,16 +57,8 @@
     }
     .prayer-table th, .prayer-table td {
       padding: 8px;
-      border-bottom: 1px solid #ddd;
+      border-bottom: 1px solid #333;
       text-align: left;
-    }
-    .highlight {
-      background-color: #e0f7fa;
-    }
-    .countdown {
-      text-align: center;
-      margin-top: 15px;
-      font-weight: bold;
     }
     .calendar-controls {
       display: flex;
@@ -75,6 +69,10 @@
     .calendar-controls select {
       padding: 6px;
       font-size: 14px;
+      background: #2c2c2c;
+      color: #e0e0e0;
+      border: 1px solid #444;
+      border-radius: 4px;
     }
     .calendar-table {
       width: 100%;
@@ -83,7 +81,7 @@
     }
     .calendar-table th, .calendar-table td {
       padding: 6px;
-      border: 1px solid #ccc;
+      border: 1px solid #444;
       text-align: center;
       font-size: 12px;
     }
@@ -91,8 +89,11 @@
 </head>
 <body>
   <div class="container">
-    <h2>Prayer Times for Gosheim, Germany</h2>
-    <div class="subtitle" id="hijriDate">Hijri: —</div>
+    <div class="header">
+      <div id="location">Location: Gosheim, Germany</div>
+      <div id="gregorianDate">Date: —</div>
+      <div id="hijriDate">Hijri: —</div>
+    </div>
 
     <div class="date-controls">
       <button onclick="changeDate(-1)">←</button>
@@ -100,16 +101,12 @@
       <button onclick="changeDate(1)">→</button>
     </div>
 
-    <div id="gregorianDate" style="text-align:center; margin-bottom:10px;">Date: —</div>
-
     <table class="prayer-table">
       <thead>
         <tr><th>Prayer</th><th>Time</th></tr>
       </thead>
       <tbody id="prayerTimes"></tbody>
     </table>
-
-    <div class="countdown" id="ramadanCountdown">Days until Ramadan: —</div>
 
     <div class="calendar-controls">
       <select id="monthSelect" onchange="loadMonthlyCalendar()">
@@ -128,7 +125,7 @@
   </div>
 
   <script>
-    const ramadanStart = new Date("2026-02-18");
+    const prayersToShow = ["Fajr", "Sunrise", "Asr", "Maghrib", "Isha"];
 
     function formatDate(date) {
       const d = date.getDate().toString().padStart(2, "0");
@@ -167,16 +164,11 @@
         const tbody = document.getElementById("prayerTimes");
         tbody.innerHTML = "";
 
-        for (const [prayer, time] of Object.entries(times)) {
+        for (const prayer of prayersToShow) {
           const row = document.createElement("tr");
-          row.innerHTML = `<td>${prayer}</td><td>${time}</td>`;
-          if (prayer === "Isha") row.classList.add("highlight");
+          row.innerHTML = `<td>${prayer}</td><td>${times[prayer]}</td>`;
           tbody.appendChild(row);
         }
-
-        const daysUntilRamadan = Math.ceil((ramadanStart - date) / (1000 * 60 * 60 * 24));
-        document.getElementById("ramadanCountdown").textContent =
-          `Days until Ramadan: ${daysUntilRamadan}`;
       } catch (err) {
         document.getElementById("prayerTimes").innerHTML =
           `<tr><td colspan="2">Error fetching data</td></tr>`;
@@ -190,10 +182,10 @@
       calendar.innerHTML = "";
 
       const headerRow = document.createElement("tr");
-      headerRow.innerHTML = "<th>Date</th><th>Fajr</th><th>Dhuhr</th><th>Asr</th><th>Maghrib</th><th>Isha</th>";
+      headerRow.innerHTML = "<th>Date</th>" + prayersToShow.map(p => `<th>${p}</th>`).join("");
       calendar.appendChild(headerRow);
 
-      const daysInMonth = new Date(year, month + 1, 0).getDate;
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
 
       for (let day = 1; day <= daysInMonth; day++) {
         const dateStr = `${day.toString().padStart(2, "0")}-${(month + 1).toString().padStart(2, "0")}-${year}`;
@@ -204,7 +196,7 @@
         const times = data.data.timings;
 
         const row = document.createElement("tr");
-        row.innerHTML = `<td>${dateStr}</td><td>${times.Fajr}</td><td>${times.Dhuhr}</td><td>${times.Asr}</td><td>${times.Maghrib}</td><td>${times.Isha}</td>`;
+        row.innerHTML = `<td>${dateStr}</td>` + prayersToShow.map(p => `<td>${times[p]}</td>`).join("");
         calendar.appendChild(row);
       }
     }
