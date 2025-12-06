@@ -97,7 +97,6 @@ footer .meta { font-size:0.6rem; color:#6b7890; margin-top:4px;}
 </div>
 
 <div class="calendar-container" id="calendarContainer">
-  <h2>Monthly Prayer Calendar</h2>
   <div class="calendar-controls">
     <select id="monthSelect"></select>
     <select id="yearSelect"></select>
@@ -153,38 +152,66 @@ function parseTime(baseDate, timeStr){ const [hh,mm]=timeStr.split(":").map(Numb
 function hms(ms){ if(ms<0) ms=0; const s=Math.floor(ms/1000); const h=Math.floor(s/3600); const m=Math.floor((s%3600)/60); const sec=s%60; return pad(h)+":"+pad(m)+":"+pad(sec);}
 function buildRow(name,time24,isCurrent,isNext){ const tr=document.createElement("tr"); tr.className="row"+(isCurrent?" current":"")+(isNext?" next":""); const td1=document.createElement("td"); td1.textContent=name; const td2=document.createElement("td"); td2.textContent=toAmPm(time24); if(isCurrent) td2.innerHTML+=`<span class="indicator">Current</span>`; else if(isNext) td2.innerHTML+=`<span class="indicator">Next</span>`; tr.append(td1,td2); return tr;}
 
-async function updateRamadanWidget(hijri){ try{ 
-  const y=parseInt(hijri?.year), m=hijri?.month?.number, d=parseInt(hijri?.day); 
-  const target=(m<9||(m===9&&d<1))?y:y+1; 
-  const r=await fetch(`https://api.aladhan.com/v1/hToG?date=1-9-${target}`); 
-  const g=(await r.json())?.data?.gregorian?.date; 
-  const ramG=new Date(`${g.split("-")[2]}-${g.split("-")[1]}-${g.split("-")[0]}T00:00:00`);
-  const diff=Math.ceil((ramG-new Date())/86400000); 
-  el.ramadanCountdown.textContent=diff>0?diff:diff===0?"Today":"Started"; 
-  el.ramadanDate.textContent=`Start: ${g} • 1-9-${target} Hijri`;
-}catch{ el.ramadanCountdown.textContent="—"; el.ramadanDate.textContent="Ramadan countdown unavailable";} }
+async function updateRamadanWidget(hijri){ 
+  try{ 
+    const y=parseInt(hijri?.year), m=hijri?.month?.number, d=parseInt(hijri?.day); 
+    const target=(m<9||(m===9&&d<1))?y:y+1; 
+    const r=await fetch(`https://api.aladhan.com/v1/hToG?date=1-9-${target}`); 
+    const g=(await r.json())?.data?.gregorian?.date; 
+    const ramG=new Date(`${g.split("-")[2]}-${g.split("-")[1]}-${g.split("-")[0]}T00:00:00`);
+    const diff=Math.ceil((ramG-new Date())/86400000); 
+    el.ramadanCountdown.textContent=diff>0?diff:diff===0?"Today":"Started"; 
+    el.ramadanDate.textContent=`Start: ${g} • 1-9-${target} Hijri`;
+  }catch{ el.ramadanCountdown.textContent="—"; el.ramadanDate.textContent="Ramadan countdown unavailable";} 
+}
 
 let countdownTimer=null;
-async function loadDaily(d){ try{
-  el.error.style.display="none";
-  const r=await fetch(`https://api.aladhan.com/v1/timingsByAddress/${formatAPIDate(d)}?address=${encodeURIComponent(ADDRESS)}&method=${METHOD}&school=${SCHOOL}`);
-  const data=(await r.json()).data||{};
-  const timings=data.timings||{};
-  const dateInfo=data.date||{};
-  el.gregorian.textContent=dateInfo.readable||"—";
-  const hijri=dateInfo.hijri||{};
-  el.hijri.textContent=hijri.month?`Hijri: ${hijri.day} ${hijri.month.en} ${hijri.year}`:"Hijri: —";
-  const tMap={}; PRAYER_ORDER.forEach(p=>{ const t=stripTZ(timings[p]); if(t!=="—") tMap[p]=parseTime(d,t);});
-  const now=new Date(); let current=null,next=null;
-  for(const p of PRAYERS_FOR_STATUS){ const t=tMap[p]; if(!t) continue; if(now>=t) current=p; else if(!next) next=p; }
-  el.tableBody.innerHTML="";
-  PRAYER_ORDER.forEach(p=>{ const t=stripTZ(timings[p]); if(t==="—") return; el.tableBody.appendChild(buildRow(p,t,p===current,p===next));});
-  if(countdownTimer) clearInterval(countdownTimer);
-  if(next&&tMap[next]){ el.nextName.textContent=next; const targetTime=tMap[next]; const tick=()=>{ el.countdown.textContent=hms(targetTime-new Date()); }; tick(); countdownTimer=setInterval(tick,1000); }
-  else{ el.nextName.textContent="—"; el.countdown.textContent="—";}
-  el.meta.textContent="Method: Muslim World League • School: Hanafi";
-  updateRamadanWidget(hijri);
-}catch(e){ el.error.textContent=`Could not load timings. ${e.message||e}`; el.error.style.display="block";} }
+async function loadDaily(d){ 
+  try{
+    el.error.style.display="none";
+    const r=await fetch(`https://api.aladhan.com/v1/timingsByAddress/${formatAPIDate(d)}?address=${encodeURIComponent(ADDRESS)}&method=${METHOD}&school=${SCHOOL}`);
+    const data=(await r.json()).data||{};
+    const timings=data.timings||{};
+    const dateInfo=data.date||{};
+    el.gregorian.textContent=dateInfo.readable||"—";
+    const hijri=dateInfo.hijri||{};
+    el.hijri.textContent=hijri.month?`Hijri: ${hijri.day} ${hijri.month.en} ${hijri.year}`:"Hijri: —";
+
+    const tMap={}; PRAYER_ORDER.forEach(p=>{ const t=stripTZ(timings[p]); if(t!=="—") tMap[p]=parseTime(d,t);});
+
+    // Next prayer calculation (handles Isha -> next day's Fajr)
+    let now=new Date(), current=null, next=null;
+    for(const p of PRAYERS_FOR_STATUS){
+      const t=tMap[p]; if(!t) continue;
+      if(now>=t) current=p; else if(!next) next=p;
+    }
+    if(!next){
+      // If Isha passed, next is tomorrow's Fajr
+      const tomorrow=new Date(d); tomorrow.setDate(tomorrow.getDate()+1);
+      const r2=await fetch(`https://api.aladhan.com/v1/timingsByAddress/${formatAPIDate(tomorrow)}?address=${encodeURIComponent(ADDRESS)}&method=${METHOD}&school=${SCHOOL}`);
+      const data2=(await r2.json()).data||{};
+      const t2=stripTZ(data2.timings?.Fajr);
+      if(t2 && t2!=="—") next=parseTime(tomorrow,t2);
+    }
+
+    // Table
+    el.tableBody.innerHTML="";
+    PRAYER_ORDER.forEach(p=>{ const t=stripTZ(timings[p]); if(t==="—") return; el.tableBody.appendChild(buildRow(p,t,p===current,p===next instanceof Date?false:p===next)); });
+
+    // Countdown
+    if(countdownTimer) clearInterval(countdownTimer);
+    if(next){
+      el.nextName.textContent = (next instanceof Date) ? "Fajr" : next;
+      const targetTime = next instanceof Date ? next : tMap[next];
+      const tick = ()=>{ const diff=targetTime - new Date(); el.countdown.textContent=hms(diff); };
+      tick();
+      countdownTimer=setInterval(tick,1000);
+    } else { el.nextName.textContent="—"; el.countdown.textContent="—";}
+
+    el.meta.textContent="Method: Muslim World League • School: Hanafi";
+    updateRamadanWidget(hijri);
+  }catch(e){ el.error.textContent=`Could not load timings. ${e.message||e}`; el.error.style.display="block";} 
+}
 
 function populateMonthYearSelectors(){ const now=new Date(); for(let i=1;i<=12;i++){ const opt=document.createElement("option"); opt.value=i; opt.textContent=i; if(i===now.getMonth()+1) opt.selected=true; el.monthSelect.appendChild(opt);}
   for(let y=now.getFullYear()-1;y<=now.getFullYear()+1;y++){ const opt=document.createElement("option"); opt.value=y; opt.textContent=y; if(y===now.getFullYear()) opt.selected=true; el.yearSelect.appendChild(opt);}
@@ -202,9 +229,4 @@ el.dateInput.addEventListener("change",()=>{ if(el.dateInput.value) loadDaily(ne
 
 populateMonthYearSelectors();
 const today=new Date();
-el.dateInput.value=formatInputDate(today);
-loadDaily(today);
-loadMonthly();
-</script>
-</body>
-</html>
+el.dateInput
