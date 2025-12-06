@@ -47,7 +47,7 @@ tr:last-child td{border-bottom:none;}
 .calendar-table th,.calendar-table td{padding:8px;border-bottom:1px solid var(--border);font-size:0.82rem;text-align:center;}
 .calendar-table th{color:var(--muted);background:#0f1623;}
 .calendar-table tr:last-child td{border-bottom:none;}
-.cal-today{background:rgba(58,163,255,0.12);}
+.cal-today{background:rgba(58,163,255,0.25);font-weight:700;}
 .calendar-legend{font-size:0.75rem;color:var(--muted);text-align:center;margin-top:4px;}
 
 footer{text-align:center;margin-top:16px;padding-bottom:8px;}
@@ -121,6 +121,7 @@ footer .meta{font-size:0.6rem;color:#6b7890;margin-top:4px;}
 const ADDRESS="Gosheim, Germany", METHOD="3", SCHOOL="1";
 const PRAYER_ORDER=["Fajr","Sunrise","Dhuhr","Asr","Maghrib","Isha"];
 const PRAYERS_FOR_STATUS=["Fajr","Dhuhr","Asr","Maghrib","Isha"];
+const MONTH_NAMES=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const el={
 tableBody:document.getElementById("tableBody"),
 gregorian:document.getElementById("gregorian"),
@@ -194,7 +195,7 @@ updateRamadanWidget(hijri);
 
 function populateMonthYearSelectors(){
 const now=new Date();
-for(let i=1;i<=12;i++){const opt=document.createElement("option");opt.value=i;opt.textContent=i;if(i===now.getMonth()+1)opt.selected=true;el.monthSelect.appendChild(opt);}
+MONTH_NAMES.forEach((name,i)=>{const opt=document.createElement("option");opt.value=i+1;opt.textContent=name;if(i===now.getMonth())opt.selected=true;el.monthSelect.appendChild(opt);});
 for(let y=now.getFullYear()-1;y<=now.getFullYear()+1;y++){const opt=document.createElement("option");opt.value=y;opt.textContent=y;if(y===now.getFullYear())opt.selected=true;el.yearSelect.appendChild(opt);}
 }
 
