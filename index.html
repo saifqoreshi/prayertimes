@@ -1,307 +1,342 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
-  <title>Prayer Times – Gosheim</title>
-
-  <!-- Static DARK THEME (no external CSS/JS) -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prayer Times – Gosheim, Germany</title>
+  <meta name="theme-color" content="#0b0f14" />
   <style>
-    /* ---------- Dark theme tokens (static) ---------- */
     :root {
-      --brand: #3aa3ff;
+      --bg: #0b0f14;
+      --card: #111722;
+      --text: #e6edf3;
+      --muted: #9fb0c0;
+      --accent: #3aa3ff;
+      --accent-2: #25c2a0;
+      --border: #233044;
+      --radius: 12px;
+      --shadow: 0 6px 18px rgba(0,0,0,0.35);
+    }
+    body { background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif; margin: 0; }
+    .app { max-width: 680px; margin: 0 auto; padding: 12px 16px 20px; }
 
-      --bg: #0b1220;          /* Page background */
-      --text: #e5e7eb;        /* Primary text */
-      --muted: #94a3b8;       /* Secondary text */
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 10px;
+      text-align: center;
+    }
+    header h1 { font-size: 1rem; margin: 0; }
+    header .sub { font-size: 0.9rem; color: var(--muted); margin-top: 4px; }
 
-      --card-bg: #111827;     /* Cards / containers */
-      --card-border: #1f2937; /* Borders */
-      --shadow: 0 1px 2px rgba(0,0,0,.25);
-
-      /* Table gray palette (dark-friendly) */
-      --table-head-bg: #0f172a;        /* Very dark header */
-      --table-head-text: #e5e7eb;      /* Header text */
-      --table-row-border: #1f2937;     /* Row separators */
-      --table-row-bg-odd: #141a26;     /* Zebra odd */
-      --table-row-bg-even: #1a2130;    /* Zebra even */
-
-      /* Accent pill */
-      --accent-bg: #0e2a47;
-      --accent-text: #cbe7ff;
-
-      /* Status colors */
-      --danger: #f87171;
-
-      /* Row highlights (subtle overlays) */
-      --hl-next-bg: #231c0d;
-      --hl-next-border: #3a2f1f;
-      --hl-current-bg: #0d2313;
-      --hl-current-border: #1f3a29;
-
-      /* Status chips */
-      --chip-bg: #132041;
-      --chip-text: #cbe7ff;
-      --chip-border: #24304a;
-      --chip-now-bg: #073822;     /* darker green chip base */
-      --chip-now-text: #a7f3d0;
-      --chip-next-bg: #37280a;    /* darker amber chip base */
-      --chip-next-text: #fde68a;
+    /* Date navigation */
+    .date-nav { text-align: center; margin: 12px 0; }
+    .date-nav input[type="date"] {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px;
+      font-size: 0.9rem;
     }
 
-    /* ---------- Base layout ---------- */
-    * { box-sizing: border-box; }
-    body {
-      margin: 0; background: var(--bg); color: var(--text);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    /* Next prayer row: left/right aligned */
+    .next-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
     }
-    .container { width: 100%; max-width: 560px; margin: 0 auto; padding: 0 16px; }
+    .next-row .label { font-size: 0.85rem; color: var(--muted); }
+    .next-row .value { font-size: 0.95rem; font-weight: 600; }
 
-    /* Top info bar (city, date, next prayer + countdown) */
-    .info {
-      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: .6rem;
-      box-shadow: var(--shadow); padding: .75rem 1rem; margin-top: 12px; margin-bottom: 8px;
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
     }
-    .row { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:.5rem; }
-    .city { font-weight: 700; }
-    .muted { color: var(--muted); }
-    .pill {
-      display:inline-flex; align-items:center; gap:.5rem; padding:.35rem .6rem; border-radius:999px;
-      background: var(--accent-bg); color: var(--accent-text); font-weight:600;
+    th, td { padding: 12px; border-bottom: 1px solid var(--border); text-align: center; }
+    th { color: var(--muted); font-size: 0.85rem; }
+    tr:last-child td { border-bottom: none; }
+    .row.current td:nth-child(2) { color: var(--accent); font-weight: 700; background: rgba(58,163,255,0.12); }
+    .row.next td:nth-child(2) { color: var(--accent-2); font-weight: 700; background: rgba(37,194,160,0.12); }
+    .indicator { display: block; font-size: 0.72rem; margin-top: 4px; }
+
+    /* Ramadan widget */
+    .ramadan-widget {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-top: 14px;
+      text-align: center;
+      box-shadow: var(--shadow);
     }
-    .countdown { font-size:.95rem; color: var(--muted); }
+    .ramadan-widget strong { color: var(--accent-2); }
+    .ramadan-widget .sub { color: var(--muted); font-size: 0.9rem; }
 
-    /* Times card */
-    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius:.6rem; box-shadow: var(--shadow); overflow: hidden; }
+    /* Footer */
+    footer { text-align: center; margin-top: 16px; padding-bottom: 8px; }
+    footer .powered { font-size: 0.7rem; color: var(--muted); }
+    footer .meta { font-size: 0.6rem; color: #6b7890; margin-top: 4px; }
 
-    /* Table (gray with zebra striping + middle status column) */
-    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-    thead th {
-      background: var(--table-head-bg); color: var(--table-head-text);
-      padding: .75rem; border-bottom: 1px solid var(--table-row-border);
-      font-weight: 700; letter-spacing: .02em;
+    /* Error */
+    .error {
+      color: #ff788a;
+      background: rgba(255,77,109,0.12);
+      border: 1px solid #ff4d6d;
+      border-radius: 10px;
+      padding: 8px;
+      margin: 10px 0;
+      display: none;
+      text-align: center;
+      font-size: 0.9rem;
     }
-    thead th.prayer { width: 38%; text-align: left; }
-    thead th.status { width: 24%; text-align: center; }
-    thead th.time   { width: 38%; text-align: right; }
-
-    tbody tr:nth-child(odd)  { background: var(--table-row-bg-odd); }
-    tbody tr:nth-child(even) { background: var(--table-row-bg-even); }
-    tbody td {
-      padding: .75rem; border-bottom: 1px solid var(--table-row-border); color: var(--text);
-      vertical-align: middle;
-    }
-    td.prayer { text-align: left; }
-    td.status { text-align: center; }
-    td.time   { text-align: right; font-weight: 600; }
-
-    /* Row highlights (overlay on zebra rows) */
-    .hl-next    { background: linear-gradient(to right, var(--hl-next-bg), var(--hl-next-bg)); border-left: 3px solid var(--hl-next-border); }
-    .hl-current { background: linear-gradient(to right, var(--hl-current-bg), var(--hl-current-bg)); border-left: 3px solid var(--hl-current-border); }
-
-    /* Status chips (center column) */
-    .chip {
-      display:inline-block; padding:.2rem .55rem; border-radius:999px; border:1px solid var(--chip-border);
-      background: var(--chip-bg); color: var(--chip-text); font-size:.78rem; font-weight:800; letter-spacing:.02em;
-    }
-    .chip-now  { background: var(--chip-now-bg);  color: var(--chip-now-text);  border-color: #14532d; }
-    .chip-next { background: var(--chip-next-bg); color: var(--chip-next-text); border-color: #7c5a1a; }
-
-    .danger { color: var(--danger); }
   </style>
 </head>
 <body>
-  <main class="container">
-    <!-- Top info (city, date, next prayer + countdown) -->
-    <section class="info" aria-label="Today & next prayer">
-      <div class="row">
-        <div class="city" id="cityLabel">Gosheim, Germany</div>
-        <div class="muted" id="dateLabel">Loading date…</div>
-      </div>
-      <div class="row" style="margin-top:.35rem;">
-        <div class="pill">
-          <span>Next:</span>
-          <span id="nextPrayerName">—</span>
-          <span id="nextPrayerTime" class="fw-semibold">—</span>
-        </div>
-        <div class="countdown" id="nextPrayerCountdown">Calculating…</div>
-      </div>
-    </section>
+  <div class="app">
+    <header>
+      <h1>Prayer times for Gosheim, Germany</h1>
+      <div class="sub" id="gregorian">—</div>
+      <div class="sub" id="hijri">—</div>
+    </header>
 
-    <!-- Prayer times table -->
-    <section class="card" aria-label="Prayer times">
-      <table>
-        <thead>
-          <tr>
-            <th class="prayer">Prayer</th>
-            <th class="status">Status</th>
-            <th class="time">Time</th>
-          </tr>
-        </thead>
-        <tbody id="prayersBody">
-          <tr><td colspan="3" class="time muted" style="padding:1rem;">Loading…</td></tr>
-        </tbody>
-      </table>
-    </section>
-  </main>
+    <div id="error" class="error"></div>
+
+    <div class="date-nav">
+      <input type="date" id="dateInput" />
+    </div>
+
+    <div class="next-row" aria-live="polite">
+      <div>
+        <span class="label">Next prayer</span>
+        <div class="value" id="nextName">—</div>
+      </div>
+      <div>
+        <span class="label">Countdown</span>
+        <div class="value" id="countdown">—</div>
+      </div>
+    </div>
+
+    <table aria-label="Prayer times">
+      <thead>
+        <tr><th>Prayer</th><th>Time & Status</th></tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+
+    <!-- Ramadan widget -->
+    <div class="ramadan-widget" aria-live="polite">
+      <div><strong>Days until Ramadan:</strong> <span id="ramadanCountdown">—</span></div>
+      <div class="sub" id="ramadanDate">—</div>
+    </div>
+
+    <footer>
+      <div class="powered">Powered by AlAdhan API</div>
+      <div class="meta" id="meta">Method: Muslim World League • School: Hanafi</div>
+    </footer>
+  </div>
 
   <script>
-    // ---- Preferred static settings (Gosheim, Germany, Hanafi, Diyanet 13) ----
-    const state = {
-      city: 'Gosheim',
-      country: 'Germany',
-      timezone: 'Europe/Berlin',
-      method: 3,                  // Diyanet, Turkey
-      school: 1,                   // Hanafi
-      latitudeAdjustmentMethod: 3, // Angle Based
-      midnightMode: 0              // Standard
+    const ADDRESS = "Gosheim, Germany";
+    const METHOD = "3";  // Muslim World League
+    const SCHOOL = "1";  // Hanafi
+    const PRAYER_ORDER = ["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"];
+    const PRAYERS_FOR_STATUS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
+
+    const el = {
+      tableBody: document.getElementById("tableBody"),
+      gregorian: document.getElementById("gregorian"),
+      hijri: document.getElementById("hijri"),
+      nextName: document.getElementById("nextName"),
+      countdown: document.getElementById("countdown"),
+      dateInput: document.getElementById("dateInput"),
+      ramadanCountdown: document.getElementById("ramadanCountdown"),
+      ramadanDate: document.getElementById("ramadanDate"),
+      meta: document.getElementById("meta"),
+      error: document.getElementById("error"),
     };
 
-    const prayersOrder = [
-      { key: 'Fajr',    label: 'Fajr'    },
-      { key: 'Sunrise', label: 'Sunrise' },
-      { key: 'Dhuhr',   label: 'Dhuhr'   },
-      { key: 'Asr',     label: 'Asr'     },
-      { key: 'Maghrib', label: 'Maghrib' },
-      { key: 'Isha',    label: 'Isha'    }
-    ];
-
-    const cleanTime = t => (t || '').toString().split(' ')[0];
-
-    function hhmmToToday(hhmm) {
-      const [hh, mm] = cleanTime(hhmm).split(':').map(Number);
-      const now = new Date();
-      return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hh, mm, 0);
+    function pad(n){ return String(n).padStart(2,"0"); }
+    function formatAPIDate(d){ return `${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()}`; }
+    function formatInputDate(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+    function parseTime(baseDate, timeStr){
+      const [hh, mm] = timeStr.split(":").map(Number);
+      const d = new Date(baseDate);
+      d.setHours(hh, mm, 0, 0);
+      return d;
+    }
+    function hms(ms){
+      if(ms < 0) ms = 0;
+      const s = Math.floor(ms / 1000);
+      const hh = Math.floor(s / 3600), mm = Math.floor((s % 3600) / 60), ss = s % 60;
+      return `${pad(hh)}:${pad(mm)}:${pad(ss)}`;
+    }
+    function buildRow(name, time, isCurrent, isNext){
+      const tr = document.createElement("tr");
+      tr.className = "row" + (isCurrent ? " current" : "") + (isNext ? " next" : "");
+      const tdName = document.createElement("td"); tdName.textContent = name;
+      const tdTime = document.createElement("td"); tdTime.textContent = time;
+      if(isCurrent){ tdTime.innerHTML += `<span class="indicator">Current</span>`; }
+      else if(isNext){ tdTime.innerHTML += `<span class="indicator">Next</span>`; }
+      tr.appendChild(tdName); tr.appendChild(tdTime);
+      return tr;
     }
 
-    function formatCountdown(ms) {
-      if (ms <= 0) return 'Started';
-      const sec = Math.floor(ms / 1000);
-      const h = Math.floor(sec / 3600);
-      const m = Math.floor((sec % 3600) / 60);
-      const s = sec % 60;
-      return `${h}h ${m}m ${s}s`;
-    }
+    let countdownTimer = null;
 
-    async function getTimingsByCity() {
-      const base = 'https://api.aladhan.com/v1/timingsByCity';
-      const url = `${base}?city=${encodeURIComponent(state.city)}&country=${encodeURIComponent(state.country)}`
-        + `&method=${state.method}&school=${state.school}&timezonestring=${encodeURIComponent(state.timezone)}`
-        + `&latitudeAdjustmentMethod=${state.latitudeAdjustmentMethod}&midnightMode=${state.midnightMode}`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`Aladhan HTTP ${res.status}`);
-      const json = await res.json();
-      if (!json?.data?.timings) throw new Error('Invalid API response payload');
-      return json.data;
-    }
-
-    function computeNextPrayerLocally(timings) {
-      const now = Date.now();
-      for (const p of prayersOrder) {
-        const t = hhmmToToday(timings[p.key]).getTime();
-        if (t > now) return { name: p.label, time: cleanTime(timings[p.key]) };
-      }
-      return { name: 'Fajr (tomorrow)', time: '—' };
-    }
-
-    function renderTimetable(timings) {
-      const tbody = document.getElementById('prayersBody');
-      tbody.innerHTML = '';
-      for (const p of prayersOrder) {
-        const t = cleanTime(timings[p.key]);
-        const tr = document.createElement('tr');
-        tr.id = `row-${p.key}`;
-        tr.innerHTML = `
-          <td class="prayer">${p.label}</td>
-          <td class="status">
-            <span class="chip" id="chip-${p.key}" style="display:none;"></span>
-          </td>
-          <td class="time">${t}</td>
-        `;
-        tbody.appendChild(tr);
-      }
-    }
-
-    function renderMeta(dateObj) {
-      document.getElementById('cityLabel').textContent = `${state.city}, ${state.country}`;
-      document.getElementById('dateLabel').textContent = dateObj?.readable || '';
-    }
-
-    function startCountdown(targetHHMM) {
-      const el = document.getElementById('nextPrayerCountdown');
-      if (!targetHHMM || targetHHMM === '—') { el.textContent = '—'; return; }
-      const target = hhmmToToday(targetHHMM);
-      function tick() {
-        const ms = target.getTime() - Date.now();
-        el.textContent = 'Starts in ' + formatCountdown(ms);
-        if (ms <= 0) { el.textContent = 'It’s time.'; clearInterval(timer); }
-      }
-      tick();
-      const timer = setInterval(tick, 1000);
-    }
-
-    function highlightCurrentAndNext(timings, nextName) {
-      // reset
-      prayersOrder.forEach(p => {
-        const row  = document.getElementById(`row-${p.key}`);
-        const chip = document.getElementById(`chip-${p.key}`);
-        if (row)  row.classList.remove('hl-current', 'hl-next');
-        if (chip) { chip.style.display = 'none'; chip.textContent = ''; chip.classList.remove('chip-now','chip-next'); }
-      });
-
-      // current = last time <= now
-      const now = Date.now();
-      let currentKey = null;
-      for (const p of prayersOrder) {
-        const t = hhmmToToday(timings[p.key]).getTime();
-        if (t <= now) currentKey = p.key; else break;
-      }
-      if (currentKey) {
-        const row  = document.getElementById(`row-${currentKey}`);
-        const chip = document.getElementById(`chip-${currentKey}`);
-        if (row)  row.classList.add('hl-current');
-        if (chip) { chip.style.display = 'inline-block'; chip.textContent = 'Now'; chip.classList.add('chip-now'); }
-      }
-
-      // next = computed name
-      const match = prayersOrder.find(p => p.label.toLowerCase() === (nextName || '').toLowerCase());
-      if (match) {
-        const row  = document.getElementById(`row-${match.key}`);
-        const chip = document.getElementById(`chip-${match.key}`);
-        if (row)  row.classList.add('hl-next');
-        if (chip) { chip.style.display = 'inline-block'; chip.textContent = 'Next'; chip.classList.add('chip-next'); }
-      }
-    }
-
-    async function load() {
-      const tbody = document.getElementById('prayersBody');
-      tbody.innerHTML = `<tr><td colspan="3" class="time muted" style="padding:1rem;">Loading…</td></tr>`;
-      document.getElementById('nextPrayerName').textContent = '—';
-      document.getElementById('nextPrayerTime').textContent = '—';
-      document.getElementById('nextPrayerCountdown').textContent = 'Calculating…';
-
+    async function loadTimingsForDate(dateObj){
       try {
-        const data = await getTimingsByCity();
-        renderTimetable(data.timings);
-        renderMeta(data.date);
+        el.error.style.display = "none";
 
-        const nextP = computeNextPrayerLocally(data.timings);
-        document.getElementById('nextPrayerName').textContent = nextP.name;
-        document.getElementById('nextPrayerTime').textContent = (nextP.time || '—');
-        startCountdown(nextP.time);
+        const apiDate = formatAPIDate(dateObj);
+        const url = `https://api.aladhan.com/v1/timingsByAddress/${apiDate}?address=${encodeURIComponent(ADDRESS)}&method=${METHOD}&school=${SCHOOL}`;
 
-        highlightCurrentAndNext(data.timings, nextP.name);
-      } catch (err) {
-        console.error('Load error:', err);
-        tbody.innerHTML = `<tr><td colspan="3" class="time danger" style="padding:1rem;">
-          Failed to load from API. ${err.message}</td></tr>`;
-        document.getElementById('nextPrayerCountdown').textContent = '';
+        const res = await fetch(url);
+        if(!res.ok) throw new Error(`API error ${res.status}`);
+        const json = await res.json();
+        const data = json?.data || {};
+        const timings = data?.timings || {};
+        const dateInfo = data?.date || {};
+        const hijri = dateInfo?.hijri;
+
+        // Header dates (exact format: separate lines)
+        el.gregorian.textContent = dateInfo?.readable || "—";
+        if(hijri && hijri.month) {
+          el.hijri.textContent = `Hijri: ${hijri.day} ${hijri.month.en} ${hijri.year}`;
+        } else {
+          el.hijri.textContent = "Hijri: —";
+        }
+
+        // Build Date objects for prayers
+        const prayerDateMap = {};
+        PRAYER_ORDER.forEach(p => {
+          const t = timings[p];
+          if(t) prayerDateMap[p] = parseTime(dateObj, t);
+        });
+
+        // Determine current and next (relative to now)
+        const now = new Date();
+        let current = null;
+        let next = null;
+        for(const p of PRAYERS_FOR_STATUS){
+          const t = prayerDateMap[p];
+          if(!t) continue;
+          if(now >= t){
+            current = p;        // most recent started prayer
+          } else if(!next){
+            next = p;           // first upcoming prayer
+          }
+        }
+
+        // Build table
+        el.tableBody.innerHTML = "";
+        PRAYER_ORDER.forEach(p => {
+          const time = timings[p];
+          if(!time) return;
+          const row = buildRow(p, time, p === current, p === next);
+          el.tableBody.appendChild(row);
+        });
+
+        // Next prayer countdown
+        if(countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+        if(next && prayerDateMap[next]) {
+          el.nextName.textContent = next;
+          const tick = () => {
+            el.countdown.textContent = hms(prayerDateMap[next] - new Date());
+          };
+          tick();
+          countdownTimer = setInterval(tick, 1000);
+        } else {
+          el.nextName.textContent = "—";
+          el.countdown.textContent = "—";
+        }
+
+        // Ramadan widget
+        await updateRamadanWidget(hijri);
+
+        // Footer meta
+        el.meta.textContent = "Method: Muslim World League • School: Hanafi";
+      } catch (e) {
+        el.error.textContent = `Could not load timings. ${e.message}`;
+        el.error.style.display = "block";
       }
     }
 
-    // First render
-    load();
+    function parseDDMMYYYYtoDate(ddmmYYYY){
+      const [dd, mm, yyyy] = ddmmYYYY.split("-").map(Number);
+      return new Date(`${yyyy}-${pad(mm)}-${pad(dd)}T00:00:00`);
+    }
+
+    async function updateRamadanWidget(hijriInfo){
+      try {
+        const currentYear = parseInt(hijriInfo?.year, 10);
+        const currentMonthNum = hijriInfo?.month?.number;
+        const currentDay = parseInt(hijriInfo?.day, 10);
+
+        let targetYear;
+        if(!currentYear || typeof currentMonthNum !== "number" || isNaN(currentDay)) {
+          targetYear = new Date().getFullYear();
+        } else if(currentMonthNum < 9 || (currentMonthNum === 9 && currentDay < 1)) {
+          targetYear = currentYear;
+        } else {
+          targetYear = currentYear + 1;
+        }
+
+        // Convert Hijri 1 Ramadan (month 9) to Gregorian via AlAdhan
+        const hToGUrl = `https://api.aladhan.com/v1/hToG?date=1-9-${targetYear}`;
+        const res = await fetch(hToGUrl);
+        if(!res.ok) throw new Error(`Ramadan API error ${res.status}`);
+        const json = await res.json();
+        const gDateStr = json?.data?.gregorian?.date; // "DD-MM-YYYY"
+        if(!gDateStr) throw new Error("Missing Ramadan date");
+
+        const ramadanGregorian = parseDDMMYYYYtoDate(gDateStr);
+        const today = new Date();
+        const msPerDay = 86400000;
+        const diffDays = Math.ceil((ramadanGregorian - today) / msPerDay);
+
+        el.ramadanCountdown.textContent =
+          diffDays > 0 ? diffDays :
+          diffDays === 0 ? "Today" :
+          "Started";
+        // No "estimated" or "Gregorian" wording
+        el.ramadanDate.textContent = `Start: ${gDateStr} • 1-9-${targetYear} Hijri`;
+      } catch (e) {
+        el.ramadanCountdown.textContent = "—";
+        el.ramadanDate.textContent = "Ramadan countdown unavailable";
+      }
+    }
+
+    // Initialize to today and load
+    (function init() {
+      const today = new Date();
+      el.dateInput.value = formatInputDate(today);
+      loadTimingsForDate(today);
+    })();
+
+    // Navigate between dates
+    el.dateInput.addEventListener("change", () => {
+      if(!el.dateInput.value) return;
+      const d = new Date(el.dateInput.value + "T00:00:00");
+      loadTimingsForDate(d);
+    });
   </script>
 </body>
 </html>
