@@ -3,240 +3,117 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Islamic Dashboard</title>
+<title>Hijri Calendar</title>
 <style>
   body { margin:0; font-family: system-ui, sans-serif; background:#0b0f14; color:#e6edf3; padding:16px; }
   header { text-align:center; margin-bottom:12px; }
   h1 { margin:0; font-size:1.2rem; }
-  .sub { font-size:0.9rem; color:#9fb0c0; }
-  
-  .next-prayer { display:flex; justify-content:space-between; align-items:center; background:#111722; border-radius:12px; padding:10px; margin:12px 0; }
-  .next-prayer .label { font-size:0.85rem; color:#9fb0c0; }
-  .next-prayer .value { font-size:1rem; font-weight:600; }
-
-  .calendar-toggle { text-align:center; margin:12px 0; }
-  .calendar-toggle button { background:#111722; color:#e6edf3; border:2px solid #3aa3ff; border-radius:12px; padding:8px 14px; cursor:pointer; font-weight:600; }
-  .calendar-toggle button:hover { background:#3aa3ff; color:#fff; }
-
+  .controls { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:12px; }
+  select, button { padding:8px 12px; border-radius:8px; border:1px solid #233044; background:#111722; color:#e6edf3; cursor:pointer; }
   table { width:100%; border-collapse: collapse; margin-top:12px; }
-  th, td { padding:8px; border:1px solid #233044; text-align:center; font-size:0.88rem; }
+  th, td { padding:8px; border:1px solid #233044; text-align:center; font-size:0.9rem; }
   th { background:#0f1623; color:#9fb0c0; }
   tr.today { background: rgba(58,163,255,0.25); font-weight:bold; }
-
   .legend { font-size:0.85rem; color:#9fb0c0; margin-top:6px; text-align:center; }
-
-  .qibla { text-align:center; margin-top:16px; }
-  .qibla canvas { max-width:200px; max-height:200px; }
-
-  .controls { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; align-items:center; justify-content:center; }
-  select { padding:8px 12px; border-radius:8px; border:1px solid #233044; background:#111722; color:#e6edf3; cursor:pointer; }
-
   #error { color:#ff788a; text-align:center; margin-top:12px; }
+  @media (max-width:600px) {
+    table, thead, tbody, th, td, tr { display:block; }
+    th { display:none; }
+    td { display:flex; justify-content:space-between; padding:6px 8px; }
+    td::before { content: attr(data-label); font-weight:600; }
+  }
 </style>
 </head>
 <body>
-<header>
-  <h1>Islamic Dashboard</h1>
-  <div class="sub" id="gregorian">—</div>
-  <div class="sub" id="hijri">—</div>
-</header>
 
-<div class="next-prayer">
-  <div>
-    <span class="label">Next Prayer</span>
-    <div class="value" id="nextName">—</div>
-  </div>
-  <div>
-    <span class="label">Countdown</span>
-    <div class="value" id="countdown">—</div>
-  </div>
-</div>
+<header>
+  <h1>Hijri Calendar</h1>
+</header>
 
 <div class="controls">
   <label>
-    City:
-    <select id="citySelect">
-      <option value="Gosheim, Germany">Gosheim, Germany</option>
-      <option value="Urbach, Germany">Urbach, Germany</option>
-    </select>
+    Month:
+    <select id="monthSelect"></select>
   </label>
   <label>
     Year:
-    <select id="yearSelect">
-      <option value="2026">2026</option>
-      <option value="2027">2027</option>
-      <option value="2028">2028</option>
-      <option value="2029">2029</option>
-      <option value="2030">2030</option>
-    </select>
+    <select id="yearSelect"></select>
   </label>
+  <button id="loadBtn">Load Calendar</button>
 </div>
 
-<div class="calendar-toggle">
-  <button id="toggleCalendar">Show Monthly Calendar</button>
-</div>
-
-<table id="calendarTable" style="display:none">
+<table id="calendarTable">
   <thead>
-    <tr><th>Date</th><th>Fajr</th><th>Dhuhr</th><th>Asr</th><th>Maghrib</th><th>Isha</th></tr>
+    <tr>
+      <th>Hijri Date</th>
+      <th>Gregorian Date</th>
+    </tr>
   </thead>
   <tbody></tbody>
 </table>
-<div class="legend">Times are in 24-hour format (local timezone from API)</div>
 
-<div class="qibla">
-  <canvas id="qiblaCompass" width="200" height="200"></canvas>
-  <div class="sub">Qibla Direction</div>
-</div>
-
+<div class="legend">Dates are shown in Hijri and corresponding Gregorian calendar</div>
 <div id="error"></div>
 
 <script>
-const PRAYERS = ["Fajr","Dhuhr","Asr","Maghrib","Isha"];
-const el = {
-  gregorian: document.getElementById("gregorian"),
-  hijri: document.getElementById("hijri"),
-  nextName: document.getElementById("nextName"),
-  countdown: document.getElementById("countdown"),
-  citySelect: document.getElementById("citySelect"),
-  yearSelect: document.getElementById("yearSelect"),
-  toggleCalendar: document.getElementById("toggleCalendar"),
-  calendarTable: document.getElementById("calendarTable"),
-  calendarBody: document.querySelector("#calendarTable tbody"),
-  error: document.getElementById("error"),
-  qiblaCanvas: document.getElementById("qiblaCompass"),
-};
-let countdownTimer=null;
+// Populate Hijri month names
+const hijriMonths = ["Muharram","Safar","Rabi' al-awwal","Rabi' al-thani","Jumada al-awwal","Jumada al-thani","Rajab","Sha'ban","Ramadan","Shawwal","Dhu al-Qi'dah","Dhu al-Hijjah"];
+const monthSelect = document.getElementById("monthSelect");
+hijriMonths.forEach((m,i)=>{ const opt=document.createElement("option"); opt.value=i+1; opt.textContent=m; monthSelect.appendChild(opt); });
 
-// Utilities
+// Populate Hijri years (2026–2030 as example)
+const yearSelect = document.getElementById("yearSelect");
+for(let y=1447;y<=1451;y++){ // approximate Hijri years for 2026–2030
+  const opt=document.createElement("option"); opt.value=y; opt.textContent=y; yearSelect.appendChild(opt);
+}
+
+// Utility to pad numbers
 const pad=n=>String(n).padStart(2,"0");
-function hms(ms){
-  if(ms<0) ms=0;
-  const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),ss=s%60;
-  return `${pad(h)}:${pad(m)}:${pad(ss)}`;
-}
-function parseTime(baseDate,timeStr){
-  const [hh,mm]=timeStr.split(":").map(Number);
-  const d=new Date(baseDate); d.setHours(hh,mm,0,0); return d;
-}
 
-// Load daily prayer info
-async function loadDailyPrayer(cityCountry){
+// Load Hijri calendar
+async function loadHijriCalendar(){
+  const month = monthSelect.value;
+  const year = yearSelect.value;
+  const tbody = document.querySelector("#calendarTable tbody");
+  tbody.innerHTML = "";
+  document.getElementById("error").textContent="";
+  
   try{
-    el.error.textContent="";
-    const city=cityCountry.split(",")[0].trim();
-    const country=cityCountry.split(",")[1].trim();
-    const today=new Date();
-    const url=`https://api.aladhan.com/v1/timingsByCity/${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}?city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}&method=3`;
-    const r=await fetch(url);
-    if(!r.ok) throw new Error("API "+r.status);
-    const payload=await r.json();
-    const data=payload.data;
-    el.gregorian.textContent=data.date.readable;
-    el.hijri.textContent=`Hijri: ${data.date.hijri.day} ${data.date.hijri.month.en} ${data.date.hijri.year}`;
-
-    const tMap={};
-    PRAYERS.forEach(p=>{ tMap[p]=parseTime(today,data.timings[p].split(" ")[0]); });
-
-    const now=new Date();
-    let current=null,next=null;
-    for(const p of PRAYERS){
-      if(now>=tMap[p]) current=p;
-      else if(!next) next=p;
-    }
-    // if current is Isha, next is tomorrow Fajr
-    if(current==="Isha"){
-      const tomorrow=new Date(today); tomorrow.setDate(today.getDate()+1);
-      const r2=await fetch(`https://api.aladhan.com/v1/timingsByCity/${tomorrow.getFullYear()}-${pad(tomorrow.getMonth()+1)}-${pad(tomorrow.getDate())}?city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}&method=3`);
-      const payload2=await r2.json();
-      const data2=payload2.data;
-      next="Fajr";
-      tMap[next]=parseTime(tomorrow,data2.timings.Fajr.split(" ")[0]);
-    }
-
-    el.nextName.textContent=next;
-    if(countdownTimer) clearInterval(countdownTimer);
-    const target=tMap[next];
-    const tick=()=>{ el.countdown.textContent=hms(target-new Date()); };
-    tick();
-    countdownTimer=setInterval(tick,1000);
-  }catch(e){
-    el.error.textContent="Error loading daily prayer: "+e.message;
-  }
-}
-
-// Load monthly calendar
-async function loadMonthly(cityCountry,year){
-  try{
-    el.error.textContent="";
-    el.calendarBody.innerHTML="";
-    const city=cityCountry.split(",")[0].trim();
-    const country=cityCountry.split(",")[1].trim();
-    for(let month=1;month<=12;month++){
-      const r=await fetch(`https://api.aladhan.com/v1/calendarByCity?city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}&method=3&month=${month}&year=${year}`);
-      const payload=await r.json();
-      const days=payload.data;
-      const today=new Date();
-      days.forEach(day=>{
-        const gr=day.date.gregorian;
-        const tr=document.createElement("tr");
-        if(parseInt(gr.day)===today.getDate() && parseInt(gr.month.number)===today.getMonth()+1 && parseInt(gr.year)===today.getFullYear()) tr.classList.add("today");
-        const cells=[gr.date,day.timings.Fajr.split(" ")[0],day.timings.Dhuhr.split(" ")[0],day.timings.Asr.split(" ")[0],day.timings.Maghrib.split(" ")[0],day.timings.Isha.split(" ")[0]];
-        cells.forEach(c=>{ const td=document.createElement("td"); td.textContent=c; tr.appendChild(td); });
-        el.calendarBody.appendChild(tr);
-      });
+    // Use API to get Hijri → Gregorian conversion
+    for(let day=1; day<=30; day++){
+      const r = await fetch(`https://api.aladhan.com/v1/hToG?date=${pad(day)}-${pad(month)}-${year}`);
+      if(!r.ok) break; // no more days
+      const data = await r.json();
+      const g = data.data.gregorian.date; // DD-MM-YYYY
+      if(!g) break;
+      
+      const tr = document.createElement("tr");
+      const tdHijri = document.createElement("td"); tdHijri.textContent = `${day} ${hijriMonths[month-1]} ${year}`; tdHijri.setAttribute("data-label","Hijri Date");
+      const tdGreg = document.createElement("td"); tdGreg.textContent = g; tdGreg.setAttribute("data-label","Gregorian Date");
+      
+      // Highlight today if matches
+      const today = new Date();
+      const [dd,mm,yyyy] = g.split("-").map(Number);
+      if(dd===today.getDate() && mm===today.getMonth()+1 && yyyy===today.getFullYear()) tr.classList.add("today");
+      
+      tr.appendChild(tdHijri); tr.appendChild(tdGreg);
+      tbody.appendChild(tr);
     }
   }catch(e){
-    el.error.textContent="Error loading calendar: "+e.message;
+    document.getElementById("error").textContent="Error loading calendar: "+e.message;
   }
 }
 
-// Toggle calendar
-el.toggleCalendar.addEventListener("click",()=>{
-  const show=el.calendarTable.style.display!=="table";
-  el.calendarTable.style.display=show?"table":"none";
-  el.toggleCalendar.textContent=show?"Hide Monthly Calendar":"Show Monthly Calendar";
-});
+// Default selection
+monthSelect.value = new Date().getMonth()+1;
+yearSelect.value = 1447;
 
-// Qibla compass
-function drawQibla(deg){
-  const c=el.qiblaCanvas,ctx=c.getContext("2d"),w=c.width,h=c.height;
-  ctx.clearRect(0,0,w,h);
-  ctx.beginPath();
-  ctx.arc(w/2,h/2,Math.min(w,h)/2-10,0,2*Math.PI);
-  ctx.strokeStyle="#3aa3ff"; ctx.lineWidth=4; ctx.stroke();
-  ctx.save();
-  ctx.translate(w/2,h/2);
-  ctx.rotate((deg-90)*Math.PI/180);
-  ctx.beginPath();
-  ctx.moveTo(0,-(Math.min(w,h)/2-20));
-  ctx.lineTo(-10,0);
-  ctx.lineTo(10,0);
-  ctx.closePath();
-  ctx.fillStyle="#25c2a0"; ctx.fill();
-  ctx.restore();
-}
+// Button click
+document.getElementById("loadBtn").addEventListener("click",loadHijriCalendar);
 
-// On load
-async function init(){
-  const city=el.citySelect.value;
-  const year=el.yearSelect.value;
-  await loadDailyPrayer(city);
-  await loadMonthly(city,year);
-  // Qibla: get user location
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(async pos=>{
-      const lat=pos.coords.latitude;
-      const lon=pos.coords.longitude;
-      const r=await fetch(`https://api.aladhan.com/v1/qibla/${lat}/${lon}`);
-      const deg=(await r.json()).data.direction;
-      drawQibla(deg);
-    });
-  }
-}
-
-document.getElementById("loadBtn")?.addEventListener("click",init);
-window.addEventListener("load",init);
+// Load on page load
+window.addEventListener("load",loadHijriCalendar);
 </script>
+
 </body>
 </html>
