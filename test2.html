@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Important Islamic Days (Dynamic via AlAdhan API)</title>
+  <title>Islamic Special Days</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; }
     table { border-collapse: collapse; width: 100%; background: #fff; }
@@ -13,78 +13,60 @@
   </style>
 </head>
 <body>
-  <h1>Important Islamic Days</h1>
+  <h1>Islamic Special Days</h1>
   <table>
-    <caption>Observances & Holidays</caption>
+    <caption>Special Days (from AlAdhan API)</caption>
     <thead>
       <tr>
         <th>Name of Day</th>
-        <th>Hijri Date</th>
-        <th>Gregorian Date (calculated)</th>
-        <th>Meaning / Significance</th>
+        <th>Hijri Date (Month-Day)</th>
+        <th>Gregorian Date</th>
       </tr>
     </thead>
     <tbody id="days-table-body">
-      <!-- rows will be populated by JS -->
+      <tr><td colspan="3">Loading...</td></tr>
     </tbody>
   </table>
 
   <script>
-    // List of important days: name, hijri date (DD‑MM‑YYYY), and significance
-    const islamicDays = [
-      { name: "Islamic New Year", hijri: "01-01-1447",
-        significance: "Marks the beginning of the new Hijri year — time for reflection and spiritual renewal." },
-      { name: "Ashura", hijri: "10-01-1447",
-        significance: "For many: a day of voluntary fasting, commemorating events such as the parting of the Red Sea. For others: mourning of the martyrdom of Husayn ibn Ali." },
-      { name: "Start of Ramadan", hijri: "01-09-1447",
-        significance: "Beginning of the month of fasting, prayer, spiritual reflection and community." },
-      { name: "Laylat al‑Qadr (Night of Power)", hijri: "27-09-1447",
-        significance: "Night when Quran was first revealed — holiest night of the year; prayers and supplications are especially encouraged." },
-      { name: "Eid al‑Fitr", hijri: "01-10-1447",
-        significance: "Marks the end of Ramadan — day of prayers, feasting, charity (zakāt al‑Fitr), and gratitude." },
-      { name: "Day of Arafah", hijri: "09-12-1447",
-        significance: "Day before Eid al‑Adha — pilgrims gather at Mount Arafat; others fast and pray for forgiveness." },
-      { name: "Eid al‑Adha", hijri: "10-12-1447",
-        significance: "Commemorates Prophet Ibrahim’s willingness to sacrifice — marked by prayers, charity, and (in some communities) sacrifice." },
-      { name: "Mawlid (Prophet's Birthday)", hijri: "12-03-1448",
-        significance: "Celebration of the birth of the Prophet — marked by prayer, remembrance, recitation, and community gatherings." },
-      { name: "Mid‑Sha‘bān (Shab-e‑Barat)", hijri: "15-08-1447",
-        significance: "Night of forgiveness — many spend night in prayer seeking mercy and preparing spiritually for Ramadan." }
-    ];
+    async function fetchSpecialDays() {
+      const tbody = document.getElementById("days-table-body");
+      tbody.innerHTML = "<tr><td colspan='3'>Loading...</td></tr>";
 
-    async function hijriToGregorian(hijriDate) {
-      const url = `https://api.aladhan.com/v1/hToG/${hijriDate}`;
       try {
-        const resp = await fetch(url);
-        const json = await resp.json();
-        if (json.code === 200 && json.data && json.data.gregorian) {
-          return json.data.gregorian.date;
-        } else {
-          console.warn("Conversion failed for", hijriDate, json);
-          return "N/A";
+        const response = await fetch("https://api.aladhan.com/v1/specialDays");
+        const json = await response.json();
+
+        if (json.code !== 200 || !json.data) {
+          tbody.innerHTML = "<tr><td colspan='3'>Failed to load data</td></tr>";
+          return;
+        }
+
+        // Clear table
+        tbody.innerHTML = "";
+
+        // Sort by month/day
+        const sortedDays = json.data.sort((a, b) => (a.month - b.month) || (a.day - b.day));
+
+        for (const day of sortedDays) {
+          const hijri = `${day.month}-${day.day}`;
+          // Optional: You could use AlAdhan hToG API to get exact Gregorian date
+          const gregorianDate = ""; // leave empty for now
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${day.name}</td>
+            <td>${hijri}</td>
+            <td>${gregorianDate}</td>
+          `;
+          tbody.appendChild(tr);
         }
       } catch (err) {
-        console.error("Error calling AlAdhan API:", err);
-        return "N/A";
+        console.error(err);
+        tbody.innerHTML = "<tr><td colspan='3'>Error fetching data</td></tr>";
       }
     }
 
-    async function buildTable() {
-      const tbody = document.getElementById("days-table-body");
-      for (const day of islamicDays) {
-        const gregDate = await hijriToGregorian(day.hijri);
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${day.name}</td>
-          <td>${day.hijri}</td>
-          <td>${gregDate}</td>
-          <td>${day.significance}</td>
-        `;
-        tbody.append(tr);
-      }
-    }
-
-    buildTable();
+    fetchSpecialDays();
   </script>
 </body>
 </html>
