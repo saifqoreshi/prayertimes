@@ -44,6 +44,7 @@
     justify-content: center;
     margin-top: 15px;
     gap: 10px;
+    flex-wrap: nowrap; /* prevent stacking */
   }
 
   button {
@@ -55,6 +56,7 @@
     color: white;
     cursor: pointer;
     transition: opacity 0.3s;
+    min-width: 120px; /* ensures both buttons have reasonable width */
   }
 
   #cat-btn { background: #ff4d4d; }
@@ -63,8 +65,7 @@
   button:hover { opacity: 0.8; }
 
   @media (max-width: 480px) {
-    .buttons { flex-direction: column; }
-    button { width: 100%; }
+    button { flex: 1; min-width: auto; }
   }
 </style>
 </head>
