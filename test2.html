@@ -1,72 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Islamic Special Days</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; }
-    table { border-collapse: collapse; width: 100%; background: #fff; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
-    th { background-color: #4CAF50; color: white; }
-    tr:nth-child(even) { background-color: #f2f2f2; }
-    caption { font-size: 1.5em; margin-bottom: 10px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Islamic Special Days</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 10px; background: #f9f9f9; }
+  h1 { text-align: center; color: #333; }
+  table { border-collapse: collapse; width: 100%; background: #fff; margin-top: 20px; }
+  th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
+  th { background-color: #4CAF50; color: white; }
+  tr:nth-child(even) { background-color: #f2f2f2; }
+  caption { font-size: 1.3em; margin-bottom: 10px; }
+  @media screen and (max-width: 600px) {
+    table, thead, tbody, th, td, tr { display: block; }
+    thead tr { display: none; }
+    tr { margin-bottom: 15px; border: 1px solid #ccc; padding: 10px; border-radius: 8px; }
+    td { border: none; padding: 5px 0; }
+    td:before { 
+      content: attr(data-label);
+      font-weight: bold;
+      display: block;
+      margin-bottom: 5px;
+    }
+  }
+</style>
 </head>
 <body>
-  <h1>Islamic Special Days</h1>
-  <table>
-    <caption>Special Days (from AlAdhan API)</caption>
-    <thead>
-      <tr>
-        <th>Name of Day</th>
-        <th>Hijri Date (Month-Day)</th>
-        <th>Gregorian Date</th>
-      </tr>
-    </thead>
-    <tbody id="days-table-body">
-      <tr><td colspan="3">Loading...</td></tr>
-    </tbody>
-  </table>
 
-  <script>
-    async function fetchSpecialDays() {
-      const tbody = document.getElementById("days-table-body");
-      tbody.innerHTML = "<tr><td colspan='3'>Loading...</td></tr>";
+<h1>Islamic Special Days</h1>
+<table>
+  <caption>Special Days (from AlAdhan API)</caption>
+  <thead>
+    <tr>
+      <th>Name of Day</th>
+      <th>Hijri Date (Month-Day)</th>
+      <th>Gregorian Date</th>
+    </tr>
+  </thead>
+  <tbody id="days-table-body">
+    <tr><td colspan="3">Loading...</td></tr>
+  </tbody>
+</table>
 
-      try {
-        const response = await fetch("https://api.aladhan.com/v1/specialDays");
-        const json = await response.json();
+<script>
+async function hijriToGregorian(hijriMonth, hijriDay) {
+  const hijriDateStr = `${hijriDay}-${hijriMonth}-1447`; // example Hijri year, can adjust dynamically
+  const url = `https://api.aladhan.com/v1/hToG/${hijriDateStr}`;
+  try {
+    const resp = await fetch(url);
+    const json = await resp.json();
+    if (json.code === 200 && json.data && json.data.gregorian) {
+      return json.data.gregorian.date;
+    } else {
+      return "N/A";
+    }
+  } catch (err) {
+    console.error("Error converting Hijri to Gregorian:", err);
+    return "N/A";
+  }
+}
 
-        if (json.code !== 200 || !json.data) {
-          tbody.innerHTML = "<tr><td colspan='3'>Failed to load data</td></tr>";
-          return;
-        }
+async function fetchSpecialDays() {
+  const tbody = document.getElementById("days-table-body");
+  tbody.innerHTML = "<tr><td colspan='3'>Loading...</td></tr>";
+  try {
+    const response = await fetch("https://api.aladhan.com/v1/specialDays");
+    const json = await response.json();
 
-        // Clear table
-        tbody.innerHTML = "";
-
-        // Sort by month/day
-        const sortedDays = json.data.sort((a, b) => (a.month - b.month) || (a.day - b.day));
-
-        for (const day of sortedDays) {
-          const hijri = `${day.month}-${day.day}`;
-          // Optional: You could use AlAdhan hToG API to get exact Gregorian date
-          const gregorianDate = ""; // leave empty for now
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${day.name}</td>
-            <td>${hijri}</td>
-            <td>${gregorianDate}</td>
-          `;
-          tbody.appendChild(tr);
-        }
-      } catch (err) {
-        console.error(err);
-        tbody.innerHTML = "<tr><td colspan='3'>Error fetching data</td></tr>";
-      }
+    if (json.code !== 200 || !json.data) {
+      tbody.innerHTML = "<tr><td colspan='3'>Failed to load data</td></tr>";
+      return;
     }
 
-    fetchSpecialDays();
-  </script>
+    tbody.innerHTML = "";
+    const sortedDays = json.data.sort((a,b) => (a.month - b.month) || (a.day - b.day));
+
+    for (const day of sortedDays) {
+      const hijriDate = `${day.month}-${day.day}`;
+      const gregDate = await hijriToGregorian(day.month, day.day);
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td data-label="Name">${day.name}</td>
+        <td data-label="Hijri Date">${hijriDate}</td>
+        <td data-label="Gregorian Date">${gregDate}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML = "<tr><td colspan='3'>Error fetching data</td></tr>";
+  }
+}
+
+fetchSpecialDays();
+</script>
+
 </body>
 </html>
