@@ -31,6 +31,12 @@
     width: 100%;
     border-radius: 12px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+  }
+
+  img.loaded {
+    opacity: 1;
   }
 
   button {
@@ -65,12 +71,24 @@
 </div>
 
 <script>
+  const catImg = document.getElementById('cat-image');
+
   async function fetchCat() {
     try {
       const response = await fetch('https://api.thecatapi.com/v1/images/search');
       const data = await response.json();
       if (data && data[0] && data[0].url) {
-        document.getElementById('cat-image').src = data[0].url;
+        // Start fade out
+        catImg.classList.remove('loaded');
+
+        // Preload image
+        const newImg = new Image();
+        newImg.src = data[0].url;
+        newImg.onload = () => {
+          catImg.src = newImg.src;
+          // Fade in
+          catImg.classList.add('loaded');
+        };
       }
     } catch (err) {
       console.error("Error fetching cat image:", err);
