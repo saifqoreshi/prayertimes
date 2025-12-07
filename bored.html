@@ -81,39 +81,43 @@
 <button id="next-activity">New Activity 🎯</button>
 
 <script>
-  const card = document.getElementById('activity-card');
-  const activityName = document.getElementById('activity-name');
-  const activityType = document.getElementById('activity-type');
-  const activityParticipants = document.getElementById('activity-participants');
+const card = document.getElementById('activity-card');
+const activityName = document.getElementById('activity-name');
+const activityType = document.getElementById('activity-type');
+const activityParticipants = document.getElementById('activity-participants');
 
-  async function fetchActivity() {
-    try {
-      card.classList.remove('loaded'); // fade out
+async function fetchActivity() {
+  try {
+    card.classList.remove('loaded'); // fade out
 
-      const response = await fetch('https://www.boredapi.com/api/activity');
-      const data = await response.json();
+    const apiURL = 'https://www.boredapi.com/api/activity';
+    const proxyURL = 'https://api.allorigins.win/get?url=' + encodeURIComponent(apiURL);
 
-      activityName.textContent = data.activity || "No activity found";
-      activityType.textContent = data.type || "Unknown";
-      activityParticipants.textContent = data.participants || "Unknown";
+    const response = await fetch(proxyURL);
+    const result = await response.json();
+    const data = JSON.parse(result.contents);
 
-      // Fade in
-      setTimeout(() => {
-        card.classList.add('loaded');
-      }, 50);
-    } catch (err) {
-      console.error("Error fetching activity:", err);
-      activityName.textContent = "Error fetching activity";
-      activityType.textContent = "-";
-      activityParticipants.textContent = "-";
-      card.classList.add('loaded');
-    }
+    activityName.textContent = data.activity || "No activity found";
+    activityType.textContent = data.type || "Unknown";
+    activityParticipants.textContent = data.participants || "Unknown";
+
+    setTimeout(() => {
+      card.classList.add('loaded'); // fade in
+    }, 50);
+
+  } catch (err) {
+    console.error("Error fetching activity:", err);
+    activityName.textContent = "Error fetching activity";
+    activityType.textContent = "-";
+    activityParticipants.textContent = "-";
+    card.classList.add('loaded');
   }
+}
 
-  document.getElementById('next-activity').addEventListener('click', fetchActivity);
+document.getElementById('next-activity').addEventListener('click', fetchActivity);
 
-  // Load first activity on page load
-  fetchActivity();
+// Load first activity on page load
+fetchActivity();
 </script>
 
 </body>
