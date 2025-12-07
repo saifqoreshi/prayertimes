@@ -21,8 +21,7 @@
     margin-bottom: 20px;
   }
 
-  #image-wrapper {
-    position: relative;
+  #image-container {
     width: 100%;
     max-width: 400px;
     text-align: center;
@@ -40,44 +39,51 @@
     opacity: 1;
   }
 
-  .button-left, .button-right {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    padding: 15px 20px;
-    font-size: 20px;
+  .buttons {
+    display: flex;
+    width: 100%;
+    max-width: 400px;
+    margin-top: 15px;
+    gap: 10px;
+  }
+
+  button {
+    flex: 1;
+    padding: 15px;
+    font-size: 18px;
     border: none;
     border-radius: 8px;
     color: white;
     cursor: pointer;
-    opacity: 0.8;
     transition: opacity 0.3s;
   }
 
-  .button-left { left: -10px; background: #ff4d4d; }
-  .button-right { right: -10px; background: #4CAF50; }
+  #cat-btn { background: #ff4d4d; }
+  #dog-btn { background: #4CAF50; }
 
-  .button-left:hover, .button-right:hover { opacity: 1; }
+  button:hover { opacity: 0.85; }
 
   @media (max-width: 480px) {
-    .button-left, .button-right {
-      padding: 12px 16px;
-      font-size: 18px;
-      left: 0;
-      right: 0;
+    .buttons {
+      gap: 8px;
     }
-    .button-left { top: calc(50% - 50px); }
-    .button-right { top: calc(50% + 50px); }
+    button {
+      padding: 14px;
+      font-size: 16px;
+    }
   }
 </style>
 </head>
 <body>
 
 <h1>Random Cats & Dogs</h1>
-<div id="image-wrapper">
+<div id="image-container">
   <img id="animal-image" src="" alt="Animal" />
-  <button class="button-left" id="cat-btn">🐱 Cat</button>
-  <button class="button-right" id="dog-btn">🐶 Dog</button>
+</div>
+
+<div class="buttons">
+  <button id="cat-btn">🐱 Cat</button>
+  <button id="dog-btn">🐶 Dog</button>
 </div>
 
 <script>
