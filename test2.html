@@ -3,115 +3,84 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Islamic Special Days</title>
+<title>Random Cat Images</title>
 <style>
-  body { font-family: Arial, sans-serif; margin: 10px; background: #f9f9f9; }
-  h1 { text-align: center; color: #333; }
-  table { border-collapse: collapse; width: 100%; background: #fff; margin-top: 20px; }
-  th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
-  th { background-color: #4CAF50; color: white; }
-  tr:nth-child(even) { background-color: #f2f2f2; }
-  caption { font-size: 1.3em; margin-bottom: 10px; }
-  .month-group { background: #d4f0ff; font-weight: bold; text-align: center; }
-  @media screen and (max-width: 600px) {
-    table, thead, tbody, th, td, tr { display: block; }
-    thead tr { display: none; }
-    tr { margin-bottom: 15px; border: 1px solid #ccc; padding: 10px; border-radius: 8px; }
-    td { border: none; padding: 5px 0; }
-    td:before { 
-      content: attr(data-label);
-      font-weight: bold;
-      display: block;
-      margin-bottom: 5px;
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 10px;
+    background: #fdf6f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  h1 {
+    color: #333;
+    text-align: center;
+  }
+
+  #cat-container {
+    margin-top: 20px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+
+  img {
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  }
+
+  button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    font-size: 16px;
+    background: #ff6f61;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  button:hover {
+    background: #ff3b2f;
+  }
+
+  @media (max-width: 480px) {
+    button {
+      width: 100%;
     }
   }
 </style>
 </head>
 <body>
 
-<h1>Islamic Special Days</h1>
-<table>
-  <caption>Grouped by Gregorian Month</caption>
-  <thead>
-    <tr>
-      <th>Name of Day</th>
-      <th>Hijri Date</th>
-      <th>Gregorian Date</th>
-    </tr>
-  </thead>
-  <tbody id="days-table-body">
-    <tr><td colspan="3">Loading...</td></tr>
-  </tbody>
-</table>
+<h1>Random Cat Images</h1>
+<div id="cat-container">
+  <img id="cat-image" src="" alt="Random Cat" />
+  <button id="next-cat">Next Cat 🐱</button>
+</div>
 
 <script>
-async function hijriToGregorian(hijriMonth, hijriDay, hijriYear) {
-  const hijriDateStr = `${hijriDay}-${hijriMonth}-${hijriYear}`;
-  const url = `https://api.aladhan.com/v1/hToG/${hijriDateStr}`;
-  try {
-    const resp = await fetch(url);
-    const json = await resp.json();
-    if (json.code === 200 && json.data && json.data.gregorian) {
-      const gDate = new Date(json.data.gregorian.date); 
-      return gDate.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
-    }
-    return "N/A";
-  } catch (err) {
-    console.error(err);
-    return "N/A";
-  }
-}
-
-async function fetchSpecialDays() {
-  const tbody = document.getElementById("days-table-body");
-  tbody.innerHTML = "<tr><td colspan='3'>Loading...</td></tr>";
-  try {
-    const response = await fetch("https://api.aladhan.com/v1/specialDays");
-    const json = await response.json();
-
-    if (json.code !== 200 || !json.data) {
-      tbody.innerHTML = "<tr><td colspan='3'>Failed to load data</td></tr>";
-      return;
-    }
-
-    // Sort by month/day
-    const sortedDays = json.data.sort((a,b) => (a.month - b.month) || (a.day - b.day));
-    
-    // Group by Gregorian month
-    let currentMonth = "";
-    tbody.innerHTML = "";
-    
-    for (const day of sortedDays) {
-      // Use Hijri year 1447 as example (you can adjust dynamically if needed)
-      const hijriYear = 1447;
-      const gregDateStr = await hijriToGregorian(day.month, day.day, hijriYear);
-      const gregMonthName = gregDateStr !== "N/A" ? new Date(gregDateStr).toLocaleString('en-US', { month: 'long' }) : "Unknown";
-
-      // Insert month group header if new month
-      if (gregMonthName !== currentMonth) {
-        currentMonth = gregMonthName;
-        const monthRow = document.createElement("tr");
-        monthRow.className = "month-group";
-        monthRow.innerHTML = `<td colspan="3">${currentMonth}</td>`;
-        tbody.appendChild(monthRow);
+  async function fetchCat() {
+    try {
+      const response = await fetch('https://api.thecatapi.com/v1/images/search');
+      const data = await response.json();
+      if (data && data[0] && data[0].url) {
+        document.getElementById('cat-image').src = data[0].url;
       }
-
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td data-label="Name">${day.name}</td>
-        <td data-label="Hijri Date">${day.month}-${day.day}-${hijriYear}</td>
-        <td data-label="Gregorian Date">${gregDateStr}</td>
-      `;
-      tbody.appendChild(tr);
+    } catch (err) {
+      console.error("Error fetching cat image:", err);
     }
-
-  } catch (err) {
-    console.error(err);
-    tbody.innerHTML = "<tr><td colspan='3'>Error fetching data</td></tr>";
   }
-}
 
-fetchSpecialDays();
+  document.getElementById('next-cat').addEventListener('click', fetchCat);
+
+  // Load first cat image on page load
+  fetchCat();
 </script>
 
 </body>
