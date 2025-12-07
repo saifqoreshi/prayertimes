@@ -12,6 +12,7 @@
   th { background-color: #4CAF50; color: white; }
   tr:nth-child(even) { background-color: #f2f2f2; }
   caption { font-size: 1.3em; margin-bottom: 10px; }
+  .month-group { background: #d4f0ff; font-weight: bold; text-align: center; }
   @media screen and (max-width: 600px) {
     table, thead, tbody, th, td, tr { display: block; }
     thead tr { display: none; }
@@ -30,11 +31,11 @@
 
 <h1>Islamic Special Days</h1>
 <table>
-  <caption>Special Days (from AlAdhan API)</caption>
+  <caption>Grouped by Gregorian Month</caption>
   <thead>
     <tr>
       <th>Name of Day</th>
-      <th>Hijri Date (Month-Day)</th>
+      <th>Hijri Date</th>
       <th>Gregorian Date</th>
     </tr>
   </thead>
@@ -44,19 +45,19 @@
 </table>
 
 <script>
-async function hijriToGregorian(hijriMonth, hijriDay) {
-  const hijriDateStr = `${hijriDay}-${hijriMonth}-1447`; // example Hijri year, can adjust dynamically
+async function hijriToGregorian(hijriMonth, hijriDay, hijriYear) {
+  const hijriDateStr = `${hijriDay}-${hijriMonth}-${hijriYear}`;
   const url = `https://api.aladhan.com/v1/hToG/${hijriDateStr}`;
   try {
     const resp = await fetch(url);
     const json = await resp.json();
     if (json.code === 200 && json.data && json.data.gregorian) {
-      return json.data.gregorian.date;
-    } else {
-      return "N/A";
+      const gDate = new Date(json.data.gregorian.date); 
+      return gDate.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
     }
+    return "N/A";
   } catch (err) {
-    console.error("Error converting Hijri to Gregorian:", err);
+    console.error(err);
     return "N/A";
   }
 }
@@ -73,21 +74,37 @@ async function fetchSpecialDays() {
       return;
     }
 
-    tbody.innerHTML = "";
+    // Sort by month/day
     const sortedDays = json.data.sort((a,b) => (a.month - b.month) || (a.day - b.day));
-
+    
+    // Group by Gregorian month
+    let currentMonth = "";
+    tbody.innerHTML = "";
+    
     for (const day of sortedDays) {
-      const hijriDate = `${day.month}-${day.day}`;
-      const gregDate = await hijriToGregorian(day.month, day.day);
+      // Use Hijri year 1447 as example (you can adjust dynamically if needed)
+      const hijriYear = 1447;
+      const gregDateStr = await hijriToGregorian(day.month, day.day, hijriYear);
+      const gregMonthName = gregDateStr !== "N/A" ? new Date(gregDateStr).toLocaleString('en-US', { month: 'long' }) : "Unknown";
+
+      // Insert month group header if new month
+      if (gregMonthName !== currentMonth) {
+        currentMonth = gregMonthName;
+        const monthRow = document.createElement("tr");
+        monthRow.className = "month-group";
+        monthRow.innerHTML = `<td colspan="3">${currentMonth}</td>`;
+        tbody.appendChild(monthRow);
+      }
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td data-label="Name">${day.name}</td>
-        <td data-label="Hijri Date">${hijriDate}</td>
-        <td data-label="Gregorian Date">${gregDate}</td>
+        <td data-label="Hijri Date">${day.month}-${day.day}-${hijriYear}</td>
+        <td data-label="Gregorian Date">${gregDateStr}</td>
       `;
       tbody.appendChild(tr);
     }
+
   } catch (err) {
     console.error(err);
     tbody.innerHTML = "<tr><td colspan='3'>Error fetching data</td></tr>";
