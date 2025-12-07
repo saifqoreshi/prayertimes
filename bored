@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fun Activities</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 10px;
+    background: #fffbe6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+  }
+
+  #activity-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+  }
+
+  #activity-card.loaded {
+    opacity: 1;
+  }
+
+  #activity-card h2 {
+    margin: 0 0 10px 0;
+    color: #ff6f61;
+  }
+
+  #activity-card p {
+    margin: 5px 0;
+    font-size: 16px;
+  }
+
+  button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    font-size: 16px;
+    background: #ff6f61;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  button:hover {
+    background: #ff3b2f;
+  }
+
+  @media (max-width: 480px) {
+    button {
+      width: 100%;
+    }
+  }
+</style>
+</head>
+<body>
+
+<h1>Bored? Try This!</h1>
+<div id="activity-card">
+  <h2 id="activity-name">Loading...</h2>
+  <p><strong>Type:</strong> <span id="activity-type"></span></p>
+  <p><strong>Participants:</strong> <span id="activity-participants"></span></p>
+</div>
+<button id="next-activity">New Activity 🎯</button>
+
+<script>
+  const card = document.getElementById('activity-card');
+  const activityName = document.getElementById('activity-name');
+  const activityType = document.getElementById('activity-type');
+  const activityParticipants = document.getElementById('activity-participants');
+
+  async function fetchActivity() {
+    try {
+      card.classList.remove('loaded'); // fade out
+
+      const response = await fetch('https://www.boredapi.com/api/activity');
+      const data = await response.json();
+
+      activityName.textContent = data.activity || "No activity found";
+      activityType.textContent = data.type || "Unknown";
+      activityParticipants.textContent = data.participants || "Unknown";
+
+      // Fade in
+      setTimeout(() => {
+        card.classList.add('loaded');
+      }, 50);
+    } catch (err) {
+      console.error("Error fetching activity:", err);
+      activityName.textContent = "Error fetching activity";
+      activityType.textContent = "-";
+      activityParticipants.textContent = "-";
+      card.classList.add('loaded');
+    }
+  }
+
+  document.getElementById('next-activity').addEventListener('click', fetchActivity);
+
+  // Load first activity on page load
+  fetchActivity();
+</script>
+
+</body>
+</html>
