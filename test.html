@@ -1,472 +1,310 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
-
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Prayer Times — Gosheim (OLED)</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prayer & Ramadan Dashboard – OLED</title>
 
 <style>
-:root {
-  --black:#000;
-  --card:#070708;
-  --muted:#7f98a8;
-  --text:#e6f3fb;
-  --accent:#2dd4ff;
-  --accent2:#00d7a7;
-  --border:rgba(255,255,255,0.06);
-  --radius:10px;
-  --small:0.82rem;
-  --base:14px;
-}
+    body {
+        margin: 0;
+        background: #000;
+        color: #fff;
+        font-family: "Segoe UI", sans-serif;
+    }
 
-* { box-sizing:border-box; }
-body {
-  margin:0; padding:18px;
-  background:var(--black); color:var(--text);
-  font-family:Inter,system-ui;
-  font-size:var(--base); line-height:1.3;
-}
+    .container {
+        width: 95%;
+        max-width: 900px;
+        margin: 25px auto;
+    }
 
-.wrap {
-  max-width:820px; margin:0 auto;
-  display:grid; grid-template-columns:1fr 320px;
-  gap:18px;
-}
+    .nav {
+        display: flex;
+        gap: 14px;
+        margin-bottom: 20px;
+    }
 
-header {
-  grid-column:1 / -1;
-  padding:14px 16px;
-  background:var(--card);
-  border-radius:12px;
-  border:1px solid var(--border);
-  display:flex; align-items:center; gap:12px;
-}
+    .nav button {
+        background: #0f0f0f;
+        color: #fff;
+        border: 1px solid #222;
+        padding: 10px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.95rem;
+    }
 
-.logo {
-  width:46px; height:46px;
-  border-radius:10px;
-  background:rgba(45,212,255,0.12);
-  display:grid; place-items:center;
-  font-weight:700; font-size:1rem; color:var(--accent);
-}
+    .nav button:hover {
+        background: #161616;
+    }
 
-h1 { margin:0; font-size:1rem; }
-.sub { color:var(--muted); font-size:var(--small); }
+    .card {
+        background: #0a0a0a;
+        border: 1px solid #111;
+        border-radius: 12px;
+        padding: 18px 20px;
+        margin-bottom: 20px;
+    }
 
-.main {
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:12px;
-  display:flex; flex-direction:column; gap:12px;
-}
+    .title {
+        font-size: 1.15rem;
+        margin-bottom: 10px;
+        color: #b7b7b7;
+    }
 
-.toprow { display:flex; justify-content:space-between; gap:12px; }
+    /* TABLE */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+    }
 
-.next-prayer-card {
-  flex:1;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid var(--border);
-}
+    th, td {
+        padding: 10px 6px;
+        border-bottom: 1px solid #111;
+        font-size: 0.95rem;
+    }
 
-.label { font-size:0.78rem; color:var(--muted); }
-.next-name { font-size:1.05rem; font-weight:700; color:var(--accent); }
-.countdown { font-weight:700; font-size:1rem; }
+    th {
+        color: #808080;
+        font-weight: 600;
+        text-align: left;
+    }
 
-.date-nav { display:flex; gap:8px; }
-.icon-btn, input[type=date] {
-  padding:8px; border-radius:8px;
-  background:transparent;
-  color:var(--text);
-  border:1px solid var(--border);
-}
-.icon-btn { cursor:pointer; }
+    /* Calendar Grid */
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 6px;
+        margin-top: 15px;
+        text-align: center;
+    }
 
-.btn {
-  flex:1;
-  padding:8px;
-  border-radius:8px;
-  background:rgba(45,212,255,0.06);
-  border:1px solid var(--border);
-  color:var(--text);
-  cursor:pointer;
-  font-weight:600;
-}
+    .day-name {
+        color: #888;
+        font-size: 0.85rem;
+    }
 
-/* Prayer table */
-table.prayers {
-  width:100%;
-  border-collapse:collapse;
-  font-size:0.93rem;
-}
-th, td {
-  padding:8px 10px;
-  border-bottom:1px dashed rgba(255,255,255,0.04);
-}
-thead th {
-  color:var(--muted);
-  font-size:0.78rem;
-  text-align:left;
-}
-tbody td:last-child { text-align:right; }
+    .day {
+        padding: 10px 0;
+        background: #111;
+        border-radius: 6px;
+        font-size: 0.92rem;
+    }
 
-.time { font-weight:700; }
-.current .time { color:var(--accent); }
-.next .time { color:var(--accent2); }
+    .today {
+        background: #0044aa;
+    }
 
-/* Sidebar */
-.side { display:flex; flex-direction:column; gap:12px; }
+    /* Dropdowns */
+    select {
+        background: #0a0a0a;
+        color: #fff;
+        border: 1px solid #222;
+        padding: 7px;
+        border-radius: 6px;
+        margin-right: 8px;
+    }
 
-.card {
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:12px;
-}
-
-.small { font-size:var(--small); color:var(--muted); }
-
-.ramadan { text-align:center; }
-.ramadan strong {
-  color:var(--accent2);
-  font-size:1.1rem;
-}
-
-/* Calendar modal */
-.modal {
-  position:fixed;
-  inset:0;
-  display:none;
-  background:rgba(0,0,0,0.6);
-  padding:18px;
-  align-items:center; justify-content:center;
-}
-.modal.open { display:flex; }
-
-.panel {
-  width:760px;
-  background:var(--card);
-  padding:16px;
-  border-radius:12px;
-  border:1px solid var(--border);
-  max-height:86vh;
-  overflow:auto;
-}
-
-.calendar-table { width:100%; border-collapse:collapse; }
-.calendar-table th, .calendar-table td {
-  padding:8px;
-  border-bottom:1px dashed rgba(255,255,255,0.04);
-}
-
-.cal-today {
-  background:rgba(45,212,255,0.07);
-  color:var(--accent);
-  font-weight:700;
-}
-
-@media(max-width:860px) {
-  .wrap { grid-template-columns:1fr; }
-  .side { order:2; }
-  .main { order:1; }
-}
+    /* Ramadan labels */
+    .iftar {
+        color: #58d68d;
+        font-weight: 600;
+    }
+    .sehri {
+        color: #ff7675;
+        font-weight: 600;
+    }
 </style>
 </head>
 
 <body>
-<div class="wrap">
+<div class="container">
 
-<header>
-  <div class="logo">PT</div>
-  <div>
-    <h1>Prayer times — Gosheim, Germany</h1>
-    <div class="sub" id="gregorian">—</div>
-  </div>
-
-  <div style="margin-left:auto;text-align:right">
-    <div class="sub" id="hijri">Hijri: —</div>
-    <div class="small" id="meta">Method: Muslim World League • School: Hanafi</div>
-  </div>
-</header>
-
-<main class="main">
-
-  <div class="toprow">
-    <div class="next-prayer-card">
-      <div class="label">Next prayer</div>
-      <div class="next-name" id="nextName">—</div>
-      <div class="countdown" id="countdown">—</div>
+    <!-- NAV -->
+    <div class="nav">
+        <button onclick="showSection('today')">Heute</button>
+        <button onclick="showSection('ramadan')">Ramadan</button>
+        <button onclick="showSection('calendar')">Monatskalender</button>
     </div>
 
-    <div style="width:220px;display:flex;flex-direction:column;gap:8px">
-      <div class="date-nav">
-        <button class="icon-btn" id="prevDay">&lt;</button>
-        <input type="date" id="dateInput">
-        <button class="icon-btn" id="nextDay">&gt;</button>
-      </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn" id="toggleCalendar">Monatskalender</button>
-        <button class="btn" id="refreshBtn">↻</button>
-      </div>
+    <!-- TODAY SECTION -->
+    <div id="today" class="card">
+        <div class="title">Gebetszeiten Heute</div>
+        <table id="todayTable"></table>
     </div>
-  </div>
 
-  <section>
-    <table class="prayers">
-      <thead>
-        <tr>
-          <th>Prayer</th>
-          <th>Time</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody"></tbody>
-    </table>
-  </section>
+    <!-- RAMADAN SECTION -->
+    <div id="ramadan" class="card" style="display:none;">
+        <div class="title">Ramadan Zeiten</div>
 
-  <div id="error" style="display:none;color:#ff9191;"></div>
+        <div id="ramadanInfo"></div>
 
-</main>
+        <table id="ramadanTable"></table>
+    </div>
 
-<aside class="side">
+    <!-- MONTHLY CALENDAR SECTION -->
+    <div id="calendar" class="card" style="display:none;">
+        <div class="title">Monatskalender</div>
 
-  <div class="card ramadan">
-    <div class="small">Days until Ramadan</div>
-    <strong id="ramadanCountdown">—</strong>
-    <div class="small" id="ramadanDate">—</div>
-  </div>
-
-  <div class="card" style="text-align:center">
-    <div class="small">Powered by</div>
-    <div style="margin-top:6px;font-weight:700;color:var(--muted)">AlAdhan API</div>
-  </div>
-
-</aside>
-
-</div>
-
-<!-- Calendar Modal -->
-<div class="modal" id="calendarModal">
-  <div class="panel">
-    <div style="display:flex;justify-content:space-between;gap:12px">
-      <div style="display:flex;gap:8px">
         <select id="monthSelect"></select>
         <select id="yearSelect"></select>
-        <button class="btn" id="loadCalendar">Load</button>
-      </div>
-      <button class="btn" id="closeCal">Close</button>
+
+        <div class="calendar-grid" id="calendarGrid"></div>
+
+        <table id="calendarTable"></table>
     </div>
 
-    <div style="margin-top:12px;overflow:auto">
-      <table class="calendar-table" id="calendarTable">
-        <thead>
-          <tr><th>Datum</th><th>Fajr</th><th>Dhuhr</th><th>Asr</th><th>Maghrib</th><th>Isha</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
 </div>
 
+
 <script>
-/* ==================== CONFIG ==================== */
-const ADDRESS = "Gosheim, Germany";
-const METHOD = "3";
-const SCHOOL = "1";
-
-const PRAYER_ORDER = ["Fajr","Sunrise","Dhuhr","Asr","Maghrib","Isha"];
-const PRAYER_NAME_UI = {
-  Fajr:"Fajr",
-  Sunrise:"Sunrise",
-  Dhuhr:"Dhuhr",
-  Asr:"Asr",
-  Maghrib:"Maghrib",
-  Isha:"Isha"
-};
-const MONTHS = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
-
-/* ==================== ELEMENTS ==================== */
-const el = {
-  gregorian: document.getElementById("gregorian"),
-  hijri: document.getElementById("hijri"),
-  tableBody: document.getElementById("tableBody"),
-  nextName: document.getElementById("nextName"),
-  countdown: document.getElementById("countdown"),
-  dateInput: document.getElementById("dateInput"),
-  ramadanCountdown: document.getElementById("ramadanCountdown"),
-  ramadanDate: document.getElementById("ramadanDate"),
-  error: document.getElementById("error"),
-
-  prev: document.getElementById("prevDay"),
-  next: document.getElementById("nextDay"),
-  refresh: document.getElementById("refreshBtn"),
-
-  toggleCal: document.getElementById("toggleCalendar"),
-  modal: document.getElementById("calendarModal"),
-  closeCal: document.getElementById("closeCal"),
-  month: document.getElementById("monthSelect"),
-  year: document.getElementById("yearSelect"),
-  loadCal: document.getElementById("loadCalendar"),
-  calBody: document.querySelector("#calendarTable tbody"),
+// ======= SAMPLE FIXED TIMES FOR DEMO =======
+const prayerTimes = {
+    fajr: "06:21", dhuhr: "12:34", asr: "14:45",
+    maghrib: "16:35", isha: "18:10"
 };
 
-/* ==================== UTIL ==================== */
-function pad(n){ return String(n).padStart(2,"0"); }
-function parseT(base, t){
-  let [h,m] = t.split(":").map(Number);
-  let d = new Date(base);
-  d.setHours(h, m, 0, 0);
-  return d;
+// For Ramadan example:
+const ramadanStart = new Date("2025-03-01");
+const ramadanEnd   = new Date("2025-03-30");
+
+
+function formatTime(t) { return t; } // CET removed.
+
+
+/* ================= SHOW/HIDE SECTIONS ================= */
+function showSection(id) {
+    document.getElementById("today").style.display = "none";
+    document.getElementById("ramadan").style.display = "none";
+    document.getElementById("calendar").style.display = "none";
+    document.getElementById(id).style.display = "block";
+
+    if (id === "calendar") loadCalendar(new Date());
 }
-function fmt(d){ return pad(d.getHours())+":"+pad(d.getMinutes()); }
 
-/* ==================== LOAD DAY ==================== */
-async function loadDay(date){
-  try{
-    el.error.style.display="none";
 
-    const url = `https://api.aladhan.com/v1/timingsByAddress/${date.getDate()}-${date.getMonth()+1}-${date.getFullYear()}?address=${encodeURIComponent(ADDRESS)}&method=${METHOD}&school=${SCHOOL}`;
-    const res = await fetch(url);
-    const data = await res.json();
+/* ================= TODAY TABLE ================= */
+function loadToday() {
+    const table = document.getElementById("todayTable");
+    table.innerHTML = `
+        <tr><th>Gebet</th><th>Zeit</th></tr>
+        <tr><td>Fajr</td><td>${formatTime(prayerTimes.fajr)}</td></tr>
+        <tr><td>Dhuhr</td><td>${formatTime(prayerTimes.dhuhr)}</td></tr>
+        <tr><td>Asr</td><td>${formatTime(prayerTimes.asr)}</td></tr>
+        <tr><td>Maghrib</td><td>${formatTime(prayerTimes.maghrib)}</td></tr>
+        <tr><td>Isha</td><td>${formatTime(prayerTimes.isha)}</td></tr>
+    `;
+}
 
-    if(!data || !data.data){ throw new Error("API error"); }
 
-    const t = data.data.timings;
-    const dateInfo = data.data.date;
+/* ================= RAMADAN WIDGET (FIXED) ================= */
+function loadRamadan() {
+    const today = new Date();
+    const infoBox = document.getElementById("ramadanInfo");
+    const table = document.getElementById("ramadanTable");
 
-    el.gregorian.textContent = `${dateInfo.readable}`;
-    el.hijri.textContent = `Hijri: ${dateInfo.hijri.day} ${dateInfo.hijri.month.en} ${dateInfo.hijri.year}`;
-
-    el.tableBody.innerHTML = "";
-
-    const now = new Date();
-
-    let currentIndex=-1, nextIndex=-1;
-    let times = PRAYER_ORDER.map(p => parseT(date, t[p]));
-
-    for(let i=0;i<times.length;i++){
-      if(now >= times[i]) currentIndex = i;
-      else { nextIndex = i; break; }
+    if (today < ramadanStart || today > ramadanEnd) {
+        infoBox.innerHTML = "Heute ist kein Ramadan.";
+        table.innerHTML = "";
+        return;
     }
-    if(currentIndex === -1) currentIndex = 0;
 
-    PRAYER_ORDER.forEach((p,i)=>{
-      const isCurrent = (i === currentIndex);
-      const isNext = (i === nextIndex);
+    const dayNum = Math.floor((today - ramadanStart) / (1000*60*60*24)) + 1;
 
-      const tr=document.createElement("tr");
-      if(isCurrent) tr.classList.add("current");
-      if(isNext) tr.classList.add("next");
+    const sehri = "06:10";
+    const iftar = "16:35";
 
-      tr.innerHTML = `
-        <td>${PRAYER_NAME_UI[p]}</td>
-        <td><span class="time">${t[p]}</span></td>
-        <td>${isCurrent ? "Current" : isNext ? "Next" : "—"}</td>
-      `;
-      el.tableBody.appendChild(tr);
+    infoBox.innerHTML = `
+        Ramadan Tag: <b>${dayNum}</b><br>
+        Sehri endet um: <span class="sehri">${sehri}</span><br>
+        Iftar ist um: <span class="iftar">${iftar}</span><br><br>
+    `;
+
+    table.innerHTML = `
+        <tr><th>Art</th><th>Zeit</th></tr>
+        <tr><td>Sehri</td><td>${sehri}</td></tr>
+        <tr><td>Iftar</td><td>${iftar}</td></tr>
+    `;
+}
+
+
+/* ================= MONTH SELECT OPTIONS ================= */
+function setupDropdowns() {
+    const monthNames = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
+
+    const monthSelect = document.getElementById("monthSelect");
+    const yearSelect  = document.getElementById("yearSelect");
+
+    monthNames.forEach((m,i)=>{
+        const opt = document.createElement("option");
+        opt.value = i;
+        opt.textContent = m;
+        monthSelect.appendChild(opt);
     });
 
-    if(nextIndex !== -1){
-      el.nextName.textContent = PRAYER_NAME_UI[PRAYER_ORDER[nextIndex]];
-      const target = times[nextIndex];
-
-      clearInterval(window._cd);
-      window._cd = setInterval(()=>{
-        let diff = target - new Date();
-        if(diff < 0){ diff=0; clearInterval(window._cd); }
-        let s = Math.floor(diff/1000),
-            h = Math.floor(s/3600),
-            m = Math.floor((s%3600)/60),
-            sc= s%60;
-        el.countdown.textContent = `${pad(h)}:${pad(m)}:${pad(sc)}`;
-      },1000);
-    } else {
-      el.nextName.textContent = "—";
-      el.countdown.textContent = "—";
+    for (let y=2025; y<=2030; y++){
+        const opt = document.createElement("option");
+        opt.value = y;
+        opt.textContent = y;
+        yearSelect.appendChild(opt);
     }
 
-  } catch(err){
-    el.error.textContent = "Error loading data.";
-    el.error.style.display="block";
-  }
+    // Load current month/year
+    const now = new Date();
+    monthSelect.value = now.getMonth();
+    yearSelect.value  = now.getFullYear();
+
+    monthSelect.onchange = ()=>loadCalendar();
+    yearSelect.onchange  = ()=>loadCalendar();
 }
 
-function setDateInput(d){
-  el.dateInput.value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-}
 
-/* ==================== NAVIGATION ==================== */
-el.prev.onclick = ()=>{ let d=new Date(el.dateInput.value); d.setDate(d.getDate()-1); setDateInput(d); loadDay(d); };
-el.next.onclick = ()=>{ let d=new Date(el.dateInput.value); d.setDate(d.getDate()+1); setDateInput(d); loadDay(d); };
-el.refresh.onclick = ()=> loadDay(new Date(el.dateInput.value));
-el.dateInput.onchange = ()=> loadDay(new Date(el.dateInput.value));
+/* ================= CALENDAR RENDER ================= */
+function loadCalendar(dateOverride=null) {
+    const month = dateOverride ? dateOverride.getMonth() : parseInt(monthSelect.value);
+    const year  = dateOverride ? dateOverride.getFullYear() : parseInt(yearSelect.value);
 
-/* ==================== RAMADAN WIDGET ==================== */
-function loadRamadan(){
-  const now = new Date();
-  const year = now.getFullYear();
-  const target = new Date(year, 2, 1);
+    const firstDay = new Date(year, month, 1);
+    const lastDay  = new Date(year, month+1, 0);
+    const grid = document.getElementById("calendarGrid");
 
-  const diff = target - now;
-  const days = Math.ceil(diff / (1000*60*60*24));
+    grid.innerHTML = "";
 
-  el.ramadanCountdown.textContent = days > 0 ? `${days} days` : "Ramadan ongoing";
-  el.ramadanDate.textContent = `${target.getDate()} ${MONTHS[target.getMonth()]} ${year}`;
-}
+    const weekdays = ["Mo","Di","Mi","Do","Fr","Sa","So"];
+    weekdays.forEach(d=>{
+        const div = document.createElement("div");
+        div.className = "day-name";
+        div.textContent = d;
+        grid.appendChild(div);
+    });
 
-/* ==================== CALENDAR MODAL ==================== */
-el.toggleCal.onclick = ()=> el.modal.classList.add("open");
-el.closeCal.onclick = ()=> el.modal.classList.remove("open");
+    let startOffset = (firstDay.getDay()+6)%7;
 
-MONTHS.forEach((m,i)=>{
-  let o=document.createElement("option");
-  o.value=i+1; o.textContent=m;
-  el.month.appendChild(o);
-});
-for(let y=2020;y<=2035;y++){
-  let o=document.createElement("option");
-  o.value=y; o.textContent=y;
-  el.year.appendChild(o);
-}
+    for (let i=0; i<startOffset; i++){
+        const empty = document.createElement("div");
+        grid.appendChild(empty);
+    }
 
-el.loadCal.onclick = async ()=>{
-  const m = el.month.value;
-  const y = el.year.value;
-
-  const url=`https://api.aladhan.com/v1/calendarByAddress/${y}/${m}?address=${encodeURIComponent(ADDRESS)}&method=${METHOD}&school=${SCHOOL}`;
-  const res=await fetch(url);
-  const data=await res.json();
-
-  el.calBody.innerHTML="";
-  data.data.forEach(day=>{
-    const tr=document.createElement("tr");
-
-    const d=day.date.gregorian.date;
     const today = new Date();
-    const isToday =
-      d === `${pad(today.getDate())}-${pad(today.getMonth()+1)}-${today.getFullYear()}`;
 
-    tr.className = isToday ? "cal-today" : "";
+    for (let d=1; d<=lastDay.getDate(); d++){
+        const div = document.createElement("div");
+        div.className = "day";
+        div.textContent = d;
 
-    tr.innerHTML = `
-      <td>${d}</td>
-      <td>${day.timings.Fajr}</td>
-      <td>${day.timings.Dhuhr}</td>
-      <td>${day.timings.Asr}</td>
-      <td>${day.timings.Maghrib}</td>
-      <td>${day.timings.Isha}</td>
-    `;
-    el.calBody.appendChild(tr);
-  });
-};
+        if (d===today.getDate() && month===today.getMonth() && year===today.getFullYear())
+            div.classList.add("today");
 
-/* ==================== INIT ==================== */
-const initDate = new Date();
-setDateInput(initDate);
-loadDay(initDate);
-loadRamadan();
+        grid.appendChild(div);
+    }
+}
+
+
+/* INIT */
+loadToday();
+setupDropdowns();
 </script>
 
 </body>
