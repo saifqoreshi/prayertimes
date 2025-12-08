@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Prayer Times – Gosheim, Germany</title>
+
+<style>
+:root {
+  --bg1: #0c0f13;
+  --bg2: #111722;
+  --glass: rgba(255, 255, 255, 0.06);
+  --text: #e6edf3;
+  --muted: #a7b4c4;
+  --accent: #5cb4ff;
+  --accent2: #3fe0b2;
+  --border: rgba(255, 255, 255, 0.12);
+  --radius: 14px;
+  --shadow: 0 10px 35px rgba(0,0,0,0.35);
+}
+
+/* GLOBAL */
+body {
+  margin: 0;
+  font-family: system-ui, Segoe UI, Roboto, sans-serif;
+  background: linear-gradient(145deg, var(--bg1), var(--bg2));
+  color: var(--text);
+}
+
+.app {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 20px 18px 40px;
+}
+
+/* HEADER */
+header {
+  position: sticky;
+  top: 0;
+  border-bottom: 1px solid var(--border);
+  padding: 14px;
+  background: rgba(17, 23, 34, 0.7);
+  backdrop-filter: blur(16px);
+  z-index: 10;
+  border-radius: 0 0 var(--radius) var(--radius);
+  box-shadow: var(--shadow);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+header .sub {
+  margin-top: 4px;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+/* ERROR */
+.error {
+  display: none;
+  color: #ff7d8f;
+  background: rgba(255, 60, 80, 0.12);
+  border: 1px solid #ff4d6d;
+  border-radius: var(--radius);
+  padding: 10px;
+  margin: 14px 0;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+/* DATE NAV */
+.date-nav {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.date-nav button,
+.date-nav input[type="date"] {
+  color: var(--text);
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 1rem;
+  backdrop-filter: blur(12px);
+  transition: 0.2s;
+}
+
+.date-nav button:hover {
+  background: var(--accent);
+  color: #000;
+}
+
+/* NEXT PRAYER ROW */
+.next-row {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 16px;
+  margin-bottom: 16px;
+  backdrop-filter: blur(16px);
+  box-shadow: var(--shadow);
+  display: flex;
+  justify-content: space-between;
+}
+
+.label {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* TABLE */
+table {
+  width: 100%;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(14px);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+th {
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.9rem;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+
+td {
+  padding: 12px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.row.current td:nth-child(2) {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.row.next td:nth-child(2) {
+  color: var(--accent2);
+  font-weight: 700;
+}
+
+.indicator {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.row.current .indicator {
+  color: var(--accent);
+}
+
+.row.next .indicator {
+  color: var(--accent2);
+}
+
+/* RAMADAN WIDGET */
+.ramadan-widget {
+  text-align: center;
+  margin-top: 20px;
+  border-radius: var(--radius);
+  padding: 16px;
+  background: var(--glass);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.ramadan-widget strong {
+  color: var(--accent2);
+}
+
+.ramadan-widget .sub {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* CALENDAR */
+.calendar-toggle button {
+  background: var(--glass);
+  border: 2px solid var(--accent);
+  padding: 12px 26px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.25s;
+  backdrop-filter: blur(14px);
+}
+
+.calendar-toggle button:hover {
+  background: var(--accent);
+  color: #000;
+}
+
+.calendar-container {
+  display: none;
+  background: var(--glass);
+  border-radius: var(--radius);
+  padding: 16px;
+  border: 1px solid var(--border);
+  margin-top: 20px;
+  backdrop-filter: blur(16px);
+  box-shadow: var(--shadow);
+  max-height: 480px;
+  overflow: auto;
+}
+
+/* Footer */
+footer {
+  margin-top: 20px;
+  text-align: center;
+}
+
+footer .powered {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+footer .meta {
+  margin-top: 4px;
+  font-size: 0.65rem;
+  color: #738297;
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<header>
+  <h1>Prayer times for Gosheim, Germany</h1>
+  <div class="sub" id="gregorian">—</div>
+  <div class="sub" id="hijri">—</div>
+</header>
+
+<div id="error" class="error" role="alert"></div>
+
+<div class="date-nav">
+  <button id="prevDay">&lt;</button>
+  <input type="date" id="dateInput" />
+  <button id="nextDay">&gt;</button>
+</div>
+
+<div class="next-row">
+  <div>
+    <span class="label">Next prayer</span>
+    <div id="nextName">—</div>
+  </div>
+  <div>
+    <span class="label">Countdown</span>
+    <div id="countdown">—</div>
+  </div>
+</div>
+
+<table>
+  <thead>
+    <tr><th>Prayer</th><th>Time & Status</th></tr>
+  </thead>
+  <tbody id="tableBody"></tbody>
+</table>
+
+<div class="ramadan-widget">
+  <div><strong>Days until Ramadan:</strong> <span id="ramadanCountdown">—</span></div>
+  <div class="sub" id="ramadanDate">—</div>
+</div>
+
+<div class="calendar-toggle">
+  <button id="toggleCalendar">Show Monthly Calendar</button>
+</div>
+
+<div class="calendar-container" id="calendarContainer">
+  <div class="calendar-controls">
+    <select id="monthSelect"></select>
+    <select id="yearSelect"></select>
+    <button id="loadCalendar">Load</button>
+  </div>
+
+  <table class="calendar-table" id="calendarTable">
+    <thead>
+      <tr><th>Datum</th><th>Fajr</th><th>Dhuhr</th><th>Asr</th><th>Maghrib</th><th>Isha</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="calendar-legend">
+    Zeiten im 12-Stunden-Format (keine Zeitzone angezeigt)
+  </div>
+</div>
+
+<footer>
+  <div class="powered">Powered by AlAdhan API</div>
+  <div class="meta" id="meta">Method: Muslim World League • School: Hanafi</div>
+</footer>
+
+</div>
+
+<!-- JS -->
+<script>
+/* SAME JS YOU PROVIDED — UNMODIFIED */
+/* (I’m keeping all your logic exactly the same.) */
+
+const ADDRESS = "Gosheim, Germany";
+const METHOD = "3";
+const SCHOOL = "1";
+
+const el = {
+  tableBody: document.getElementById("tableBody"),
+  gregorian: document.getElementById("gregorian"),
+  hijri: document.getElementById("hijri"),
+  nextName: document.getElementById("nextName"),
+  countdown: document.getElementById("countdown"),
+  dateInput: document.getElementById("dateInput"),
+  ramadanCountdown: document.getElementById("ramadanCountdown"),
+  ramadanDate: document.getElementById("ramadanDate"),
+  meta: document.getElementById("meta"),
+  error: document.getElementById("error"),
+  toggleBtn: document.getElementById("toggleCalendar"),
+  calContainer: document.getElementById("calendarContainer"),
+  calBody: document.querySelector("#calendarTable tbody"),
+  monthSelect: document.getElementById("monthSelect"),
+  yearSelect: document.getElementById("yearSelect"),
+  loadBtn: document.getElementById("loadCalendar"),
+  prevDay: document.getElementById("prevDay"),
+  nextDay: document.getElementById("nextDay")
+};
+
+const PRAYER_ORDER = ["Fajr","Sunrise","Dhuhr","Asr","Maghrib","Isha"];
+const PRAYERS_FOR_STATUS = ["Fajr","Dhuhr","Asr","Maghrib","Isha"];
+const MONTHS_DE = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+
+function pad(n){ return String(n).padStart(2,"0"); }
+function formatAPIDate(d){ return `${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()}`; }
+function formatInputDateISO(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function stripTZ(s){ return !s ? "—" : s.split(" ")[0]; }
+function toAmPm(t){
+  if(!t || t==="—") return "—";
+  const [h,m] = t.split(":").map(Number);
+  const hh = (h % 12) || 12;
+  return hh + ":" + pad(m) + (h >= 12 ? " PM" : " AM");
+}
+function parseTime(baseDate, timeStr){
+  const [h,m] = timeStr.split(":").map(Number);
+  const d = new Date(baseDate);
+  d.setHours(h, m, 0, 0);
+  return d;
+}
+function hms(ms){
+  if(ms < 0) ms = 0;
+  const s = Math.floor(ms/1000), h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
+  return pad(h)+":"+pad(m)+":"+pad(sec);
+}
+
+function formatDateGermanLong(d){
+  try {
+    return d.toLocaleDateString("de-DE", {
+      weekday: "long", day: "numeric", month: "long", year: "numeric"
+    });
+  } catch {
+    return d.toLocaleDateString("de-DE");
+  }
+}
+
+function formatDateGermanShort(d){
+  return pad(d.getDate()) + "." + pad(d.getMonth()+1) + "." + d.getFullYear();
+}
+
+function buildRow(name, time24, isCurrent, isNext){
+  const tr = document.createElement("tr");
+  tr.className = "row" + (isCurrent ? " current" : "") + (isNext ? " next" : "");
+
+  const td1 = document.createElement("td");
+  td1.textContent = name;
+
+  const td2 = document.createElement("td");
+  td2.textContent = toAmPm(time24);
+
+  if(isCurrent) td2.innerHTML += `<span class="indicator">Current</span>`;
+  else if(isNext) td2.innerHTML += `<span class="indicator">Next</span>`;
+
+  tr.append(td1, td2);
+  return tr;
+}
+
+/* RAMADAN WIDGET */
+async function updateRamadanWidget(hijri){
+  try {
+    const hijriYear = hijri?.year ? parseInt(hijri.year, 10) : new Date().getFullYear();
+    const currentHijriMonth = hijri?.month?.number ? parseInt(hijri.month.number,10) : null;
+
+    let targetHijri = hijriYear;
+    if(currentHijriMonth && currentHijriMonth >= 9) targetHijri++;
+
+    const resp = await fetch(`https://api.aladhan.com/v1/hToG?date=1-9-${targetHijri}`);
+    const body = await resp.json();
+    const g = body?.data?.gregorian?.date;
+
+    if(!g){
+      el.ramadanCountdown.textContent = "—";
+      el.ramadanDate.textContent = "Ramadan start unavailable";
+      return;
+    }
+
+    const [gd, gm, gy] = g.split("-");
+    const ramDate = new Date(`${gy}-${gm}-${gd}`);
+    const diff = Math.ceil((ramDate - new Date()) / 86400000);
+
+    el.ramadanCountdown.textContent =
+      diff > 0 ? diff : diff === 0 ? "Heute" : "Bereits begonnen";
+
+    el.ramadanDate.textContent = `Start: ${formatDateGermanShort(ramDate)}`;
+  } catch {
+    el.ramadanCountdown.textContent = "—";
+    el.ramadanDate.textContent = "Unavailable";
+  }
+}
+
+/* LOAD DAILY DATA */
+let countdownTimer = null;
+async function loadDaily(d){
+  try{
+    el.error.style.display = "none";
+
+    const apiDate = formatAPIDate(d);
+    const resp = await fetch(
+      `https://api.aladhan.com/v1/timingsByAddress/${apiDate}?address=${encodeURIComponent(ADDRESS)}&method=${METHOD}&school=${SCHOOL}`
+    );
+    const body = await resp.json();
+    const data = body.data;
+    const timings = data.timings;
+    const dateInfo = data.date;
+
+    const g = dateInfo.gregorian;
+    const gDate = new Date(`${g.year}-${pad(g.month.number)}-${pad(g.day)}`);
+    el.gregorian.textContent = formatDateGermanLong(gDate);
+
+    const hijri = dateInfo.hijri;
+    el.hijri.textContent = `Hijri: ${hijri.day} ${hijri.month.en} ${hijri.year}`;
+
+    const tMap = {};
+    PRAYER_ORDER.forEach(p => {
+      const t = stripTZ(timings[p]);
+      if(t !== "—") tMap[p] = parseTime(d, t);
+    });
+
+    const now = new Date();
+    let currentName = null, nextName = null;
+
+    for(const p of PRAYERS_FOR_STATUS){
+      const t = tMap[p];
+      if(!t) continue;
+      if(now >= t) currentName = p;
+      else if(!nextName) nextName = p;
+    }
+
+    let nextIsTomorrow = false;
+    if(!nextName){
+      const tmr = new Date(d); tmr.setDate(tmr.getDate()+1);
+
+      const r2 = await fetch(
+        `https://api.aladhan.com/v1/timingsByAddress/${formatAPIDate(tmr)}?address=${encodeURIComponent(ADDRESS)}&method=${METHOD}&school=${SCHOOL}`
+      );
+      const b2 = await r2.json();
+      const fajrT = stripTZ(b2.data.timings.Fajr);
+
+      nextName = "Fajr";
+      nextIsTomorrow = true;
+      tMap["Fajr_tomorrow"] = parseTime(tmr, fajrT);
+    }
+
+    el.tableBody.innerHTML = "";
+    PRAYER_ORDER.forEach(p => {
+      const raw = stripTZ(timings[p]);
+      if(raw !== "—"){
+        el.tableBody.appendChild(buildRow(p, raw, p === currentName, p === nextName));
+      }
+    });
+
+    if(countdownTimer) clearInterval(countdownTimer);
+
+    if(nextName){
+      el.nextName.textContent = nextIsTomorrow ? `${nextName} (tomorrow)` : nextName;
+      const target = nextIsTomorrow ? tMap["Fajr_tomorrow"] : tMap[nextName];
+
+      const tick = () => {
+        const diff = target - new Date();
+        el.countdown.textContent = hms(diff);
+      };
+
+      tick();
+      countdownTimer = setInterval(tick, 1000);
+    }
+
+    updateRamadanWidget(hijri);
+
+  }catch(e){
+    el.error.textContent = "Could not load timings.";
+    el.error.style.display = "block";
+  }
+}
+
+/* MONTH SELECT */
+function populateMonthYearSelectors(){
+  const now = new Date();
+
+  MONTHS_DE.forEach((name,i)=>{
+    const opt = document.createElement("option");
+    opt.value = i+1;
+    opt.textContent = name;
+    if(i === now.getMonth()) opt.selected = true;
+    el.monthSelect.appendChild(opt);
+  });
+
+  for(let y = now.getFullYear()-1; y <= now.getFullYear()+1; y++){
+    const opt = document.createElement("option");
+    opt.value = y;
+    opt.textContent = y;
+    if(y === now.getFullYear()) opt.selected = true;
+    el.yearSelect.appendChild(opt);
+  }
+}
+
+async function loadMonthlyData(month, year){
+  try{
+    const r = await fetch(
+      `https://api.aladhan.com/v1/calendarByAddress?address=${encodeURIComponent(ADDRESS)}&method=${METHOD}&school=${SCHOOL}&month=${month}&year=${year}`
+    );
+    const body = await r.json();
+    const days = body.data;
+
+    el.calBody.innerHTML = "";
+    const today = new Date();
+
+    days.forEach(day=>{
+      const tr = document.createElement("tr");
+
+      const g = day.date.gregorian;
+      const grDate = new Date(`${g.year}-${pad(g.month.number)}-${pad(g.day)}`);
+
+      if(
+        g.day == today.getDate() &&
+        g.month.number == today.getMonth()+1 &&
+        g.year == today.getFullYear()
+      ){
+        tr.classList.add("cal-today");
+      }
+
+      const t = day.timings;
+      const rowData = [
+        formatDateGermanShort(grDate),
+        stripTZ(t.Fajr),
+        stripTZ(t.Dhuhr),
+        stripTZ(t.Asr),
+        stripTZ(t.Maghrib),
+        stripTZ(t.Isha)
+      ];
+
+      rowData.forEach(val=>{
+        const td=document.createElement("td");
+        td.textContent=val;
+        tr.appendChild(td);
+      });
+
+      el.calBody.appendChild(tr);
+    });
+
+  }catch{
+    el.calBody.innerHTML = "<tr><td colspan='6'>Unavailable</td></tr>";
+  }
+}
+
+/* EVENTS */
+el.toggleBtn.addEventListener("click", () => {
+  const show = el.calContainer.style.display !== "block";
+  el.calContainer.style.display = show ? "block" : "none";
+  el.toggleBtn.textContent = show ? "Hide Monthly Calendar" : "Show Monthly Calendar";
+});
+
+el.loadBtn.addEventListener("click", () => {
+  loadMonthlyData(parseInt(el.monthSelect.value), parseInt(el.yearSelect.value));
+});
+
+el.prevDay.addEventListener("click", ()=>{
+  if(!el.dateInput.value) return;
+  const d = new Date(el.dateInput.value);
+  d.setDate(d.getDate()-1);
+  el.dateInput.value = formatInputDateISO(d);
+  loadDaily(d);
+});
+
+el.nextDay.addEventListener("click", ()=>{
+  if(!el.dateInput.value) return;
+  const d = new Date(el.dateInput.value);
+  d.setDate(d.getDate()+1);
+  el.dateInput.value = formatInputDateISO(d);
+  loadDaily(d);
+});
+
+el.dateInput.addEventListener("change", ()=>{
+  if(el.dateInput.value){
+    loadDaily(new Date(el.dateInput.value));
+  }
+});
+
+/* INIT */
+populateMonthYearSelectors();
+const today = new Date();
+el.dateInput.value = formatInputDateISO(today);
+loadDaily(today);
+loadMonthlyData(today.getMonth()+1, today.getFullYear());
+</script>
+
+</body>
+</html>
