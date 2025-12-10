@@ -5,21 +5,21 @@
 <title>Gebetszeiten Gosheim</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  body { font-family: Arial, sans-serif; background:#0f172a; color:#e5e7eb; margin:0; padding:12px; }
-  h1 { font-size:1rem; margin:0 0 8px; text-align:center; }
-  table { width:100%; border-collapse:collapse; margin-bottom:10px; font-size:0.85rem; }
-  th, td { padding:4px; text-align:left; }
-  th { border-bottom:1px solid #1f2937; font-weight:600; }
+  body { font-family: Arial, sans-serif; background:#0f172a; color:#e5e7eb; margin:0; padding:14px; }
+  h1 { font-size:1.1rem; margin:0 0 10px; text-align:center; }
+  table { width:100%; border-collapse:collapse; margin-bottom:12px; font-size:1rem; }
+  th, td { padding:8px; text-align:left; }
+  th { border-bottom:2px solid #1f2937; font-weight:600; }
   tr:nth-child(even){background:#111827;}
-  .status { font-size:0.65rem; padding:2px 5px; border-radius:6px; }
+  .status { font-size:0.75rem; padding:3px 7px; border-radius:6px; }
   .now { background:#f59e0b33; color:#f59e0b; }
   .next { background:#22c55e33; color:#22c55e; }
-  .card { background:#111827; padding:8px; border-radius:8px; margin-bottom:10px; font-size:0.85rem; }
-  .count { font-size:1rem; font-weight:bold; }
+  .card { background:#111827; padding:10px; border-radius:8px; margin-bottom:12px; font-size:0.9rem; }
+  .count { font-size:1.1rem; font-weight:bold; }
   .controls { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:8px 0; }
-  .btn { flex:1; min-width:80px; background:#1f2937; color:#e5e7eb; border:none; padding:6px; border-radius:6px; cursor:pointer; font-size:0.75rem; }
+  .btn { flex:1; min-width:90px; background:#1f2937; color:#e5e7eb; border:none; padding:7px; border-radius:6px; cursor:pointer; font-size:0.8rem; }
   .btn:hover { background:#374151; }
-  .footer { font-size:0.65rem; color:#9ca3af; text-align:center; margin-top:6px; }
+  .footer { font-size:0.7rem; color:#9ca3af; text-align:center; margin-top:6px; }
 </style>
 </head>
 <body>
@@ -69,7 +69,7 @@ function render(data){
   document.getElementById("settingsLine").textContent=`Methode: MWL | Schule: Hanafi | Stadt: ${CITY} | TZ: ${data.meta.timezone}`;
 
   const tbody=document.querySelector("#prayerTable tbody"); tbody.innerHTML="";
-  const keys=["Fajr","Sunrise","Dhuhr","Asr","Maghrib","Isha"];
+  const keys=["Fajr","Dhuhr","Asr","Maghrib","Isha"]; // Sunrise separat
   const now=new Date();
   const entries=keys.map(k=>{
     const [h,m]=data.timings[k].split(":").map(Number);
@@ -79,6 +79,10 @@ function render(data){
   let current=-1,next=-1;
   for(let i=0;i<entries.length;i++){if(now>=entries[i].when && (!entries[i+1]||now<entries[i+1].when)){current=i;next=i+1;break;}}
   if(current===-1) next=entries.findIndex(e=>e.when>now);
+
+  // Sunrise nur anzeigen, kein Status
+  const sunriseTime=fmtTime(addDays(new Date(),dayOffset).setHours(...data.timings["Sunrise"].split(":").map(Number)));
+  tbody.innerHTML+=`<tr><td>Sonnenaufgang</td><td>${data.timings["Sunrise"]}</td><td></td></tr>`;
 
   entries.forEach((e,i)=>{
     let status=""; if(i===current)status="now"; else if(i===next)status="next";
