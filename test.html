@@ -1,320 +1,109 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gebetszeiten Gosheim</title>
-  <style>
-    :root {
-      --bg: #0f172a;
-      --card: #111827;
-      --text: #e5e7eb;
-      --muted: #9ca3af;
-      --accent: #22c55e;
-      --warn: #f59e0b;
-      --border: #1f2937;
-    }
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; background: var(--bg); color: var(--text); margin: 0; padding: 24px; }
-    .app { max-width: 880px; margin: 0 auto; }
-    h1 { margin: 0 0 8px; font-size: 1.5rem; }
-    .sub { color: var(--muted); margin-bottom: 16px; }
-    .controls { display: flex; gap: 8px; align-items: center; margin: 16px 0; flex-wrap: wrap; }
-    .btn { background: var(--card); color: var(--text); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; cursor: pointer; }
-    .btn:hover { border-color: var(--muted); }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .title { font-weight: 600; margin-bottom: 8px; }
-    .row { display: grid; grid-template-columns: 1.2fr 0.8fr 0.8fr; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
-    .row:last-child { border-bottom: none; }
-    .status { font-size: 12px; padding: 2px 8px; border-radius: 999px; display: inline-block; }
-    .status.now { background: rgba(245, 158, 11, 0.15); color: var(--warn); border: 1px solid rgba(245, 158, 11, 0.4); }
-    .status.next { background: rgba(34, 197, 94, 0.15); color: var(--accent); border: 1px solid rgba(34, 197, 94, 0.4); }
-    .muted { color: var(--muted); }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-    .stack { display: grid; gap: 6px; }
-    .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
-    .badge { font-size: 12px; color: var(--muted); border: 1px dashed var(--border); padding: 3px 8px; border-radius: 999px; }
-    .count { font-size: 1.25rem; font-weight: 600; }
-    @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
-  </style>
+<meta charset="UTF-8">
+<title>Gebetszeiten Gosheim</title>
+<style>
+  body { font-family: Arial, sans-serif; background:#0f172a; color:#e5e7eb; margin:0; padding:16px; }
+  h1 { font-size:1.2rem; margin:0 0 8px; }
+  table { width:100%; border-collapse:collapse; margin-bottom:12px; }
+  th, td { padding:6px; text-align:left; font-size:0.9rem; }
+  th { border-bottom:1px solid #1f2937; }
+  tr:nth-child(even){background:#111827;}
+  .status { font-size:0.7rem; padding:2px 6px; border-radius:6px; }
+  .now { background:#f59e0b33; color:#f59e0b; }
+  .next { background:#22c55e33; color:#22c55e; }
+  .card { background:#111827; padding:10px; border-radius:8px; margin-bottom:12px; }
+  .count { font-size:1rem; font-weight:bold; }
+  .controls { margin:8px 0; }
+  .btn { background:#1f2937; color:#e5e7eb; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:0.8rem; }
+  .btn:hover { background:#374151; }
+  .footer { font-size:0.7rem; color:#9ca3af; margin-top:8px; }
+</style>
 </head>
 <body>
-  <div class="app">
-    <h1>Gebetszeiten – Gosheim, Deutschland</h1>
-    <div class="sub" id="metaLine">Lade Daten …</div>
+  <h1>Gebetszeiten Gosheim</h1>
+  <table id="prayerTable">
+    <thead><tr><th>Gebet</th><th>Zeit</th><th>Status</th></tr></thead>
+    <tbody></tbody>
+  </table>
 
-    <div class="controls">
-      <button class="btn" id="prevBtn">← Vorheriger Tag</button>
-      <button class="btn" id="todayBtn">Heute</button>
-      <button class="btn" id="nextBtn">Nächster Tag →</button>
-      <span class="muted" id="methodLine"></span>
-    </div>
-
-    <div class="grid">
-      <div class="card">
-        <div class="title">Tagesdaten</div>
-        <div class="stack">
-          <div><strong>Aktuelles Datum:</strong> <span id="gregDate">–</span></div>
-          <div><strong>Hijri-Datum:</strong> <span id="hijriDate">–</span></div>
-          <div class="badges">
-            <div class="badge" id="tzBadge">Zeitzone: –</div>
-            <div class="badge">Methode: Muslim World League</div>
-            <div class="badge">Schule: Hanafi</div>
-            <div class="badge" id="coordsBadge">Koordinaten: –</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="title">Nächstes Gebet</div>
-        <div class="stack">
-          <div><strong>Gebet:</strong> <span id="nextName">–</span></div>
-          <div><strong>Uhrzeit:</strong> <span id="nextTime" class="mono">–</span></div>
-          <div><strong>Countdown:</strong> <span id="countdown" class="count">–</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card" style="margin-top:16px">
-      <div class="title">Gebete und Zeiten</div>
-      <div class="row">
-        <div><strong>Gebet</strong></div>
-        <div><strong>Uhrzeit</strong></div>
-        <div><strong>Status</strong></div>
-      </div>
-      <div id="tableBody"></div>
-    </div>
+  <div class="card">
+    <div><b>Nächstes Gebet:</b> <span id="nextName">–</span></div>
+    <div><b>Zeit:</b> <span id="nextTime">–</span></div>
+    <div><b>Countdown:</b> <span id="countdown" class="count">–</span></div>
   </div>
 
-  <script>
-    // Konfiguration
-    const CITY = "Gosheim";
-    const COUNTRY = "Germany";
-    const METHOD = 3; // Muslim World League
-    const SCHOOL = 1; // Hanafi
-    const PRAYER_KEYS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
-    const EXTRA_KEYS  = ["Sunrise"]; // Zusatz, ohne Status
+  <div class="controls">
+    <button class="btn" id="prevBtn">← Vorher</button>
+    <button class="btn" id="todayBtn">Heute</button>
+    <button class="btn" id="nextBtn">Nächster →</button>
+  </div>
 
-    // Zustand
-    let dayOffset = 0;
-    let currentData = null;
-    let nextDayData = null; // für Fajr des nächsten Tages
-    let countdownTimer = null;
+  <div class="card">
+    <div><b>Datum:</b> <span id="gregDate">–</span> | <b>Hijri:</b> <span id="hijriDate">–</span></div>
+  </div>
 
-    // Formatierer
-    const timeFmtDE = new Intl.DateTimeFormat("de-DE", {
-      hour: "2-digit", minute: "2-digit", hour12: false,
-    });
-    const dateFmtDE = new Intl.DateTimeFormat("de-DE", {
-      weekday: "long", year: "numeric", month: "long", day: "numeric"
-    });
-    function fmtTime(d) { return timeFmtDE.format(d); }
-    function fmtDate(d) { return dateFmtDE.format(d); }
-    function pad2(n) { return String(n).padStart(2, "0"); }
-    function addDays(baseDate, days) { const d = new Date(baseDate); d.setDate(d.getDate() + days); return d; }
+  <div class="footer" id="settingsLine">–</div>
 
-    // Baut eine Date-Instanz in lokaler Zeitzone aus "HH:MM" am Zieltag
-    function makeLocalDateFromHHMM(baseDate, hhmm) {
-      const [h, m] = hhmm.split(":").map(Number);
-      const d = new Date(baseDate);
-      d.setHours(h, m, 0, 0);
-      return d;
+<script>
+const CITY="Gosheim", COUNTRY="Germany", METHOD=3, SCHOOL=1;
+let dayOffset=0, countdownTimer=null;
+
+function pad2(n){return String(n).padStart(2,"0");}
+function addDays(d,n){let x=new Date(d);x.setDate(x.getDate()+n);return x;}
+function fmtDate(d){return new Intl.DateTimeFormat("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",year:"numeric"}).format(d);}
+function fmtTime(d){return new Intl.DateTimeFormat("de-DE",{hour:"2-digit",minute:"2-digit"}).format(d);}
+
+async function fetchData(offset){
+  const base=addDays(new Date(),offset);
+  const dd=pad2(base.getDate()), mm=pad2(base.getMonth()+1), yyyy=base.getFullYear();
+  const url=`https://api.aladhan.com/v1/timingsByCity?city=${CITY}&country=${COUNTRY}&method=${METHOD}&school=${SCHOOL}&date=${dd}-${mm}-${yyyy}`;
+  const res=await fetch(url); const j=await res.json(); return j.data;
+}
+
+function render(data){
+  document.getElementById("gregDate").textContent=fmtDate(addDays(new Date(),dayOffset));
+  document.getElementById("hijriDate").textContent=`${data.date.hijri.day}.${data.date.hijri.month.ar} ${data.date.hijri.year}`;
+  document.getElementById("settingsLine").textContent=`Methode: Muslim World League | Schule: Hanafi | Stadt: ${CITY} | TZ: ${data.meta.timezone}`;
+
+  const tbody=document.querySelector("#prayerTable tbody"); tbody.innerHTML="";
+  const keys=["Fajr","Sunrise","Dhuhr","Asr","Maghrib","Isha"];
+  const now=new Date();
+  const entries=keys.map(k=>{
+    const [h,m]=data.timings[k].split(":").map(Number);
+    const d=addDays(new Date(),dayOffset); d.setHours(h,m,0,0);
+    return {key:k,time:fmtTime(d),when:d};
+  });
+  let current=-1,next=-1;
+  for(let i=0;i<entries.length;i++){if(now>=entries[i].when && (!entries[i+1]||now<entries[i+1].when)){current=i;next=i+1;break;}}
+  if(current===-1) next=entries.findIndex(e=>e.when>now);
+
+  entries.forEach((e,i)=>{
+    let status=""; if(i===current)status="now"; else if(i===next)status="next";
+    tbody.innerHTML+=`<tr><td>${e.key}</td><td>${e.time}</td><td>${status?'<span class="status '+status+'">'+(status==="now"?"aktuell":"nächstes")+'</span>':""}</td></tr>`;
+  });
+
+  const nextEl=next>=0?entries[next]:null;
+  document.getElementById("nextName").textContent=nextEl?nextEl.key:"–";
+  document.getElementById("nextTime").textContent=nextEl?nextEl.time:"–";
+  if(countdownTimer)clearInterval(countdownTimer);
+  if(nextEl){
+    function tick(){
+      const diff=nextEl.when-new Date();
+      if(diff<=0){document.getElementById("countdown").textContent="00:00:00";return;}
+      const s=Math.floor(diff/1000),h=pad2(Math.floor(s/3600)),m=pad2(Math.floor((s%3600)/60)),sec=pad2(s%60);
+      document.getElementById("countdown").textContent=`${h}:${m}:${sec}`;
     }
+    tick(); countdownTimer=setInterval(tick,1000);
+  } else document.getElementById("countdown").textContent="–";
+}
 
-    // API-Aufrufe
-    async function fetchTimingsByCity(offsetDays = 0) {
-      const today = new Date();
-      const target = addDays(today, offsetDays);
-      const yyyy = target.getFullYear();
-      const mm = pad2(target.getMonth() + 1);
-      const dd = pad2(target.getDate());
-      const dateParam = `${dd}-${mm}-${yyyy}`;
-      const url = `https://api.aladhan.com/v1/timingsByCity?city=${encodeURIComponent(CITY)}&country=${encodeURIComponent(COUNTRY)}&method=${METHOD}&school=${SCHOOL}&date=${dateParam}`;
-      const res = await fetch(url);
-      const json = await res.json();
-      if (!res.ok || json.code !== 200) throw new Error("Fehlerhafte API-Antwort");
-      return json.data;
-    }
-
-    // Rendering Meta
-    function renderMeta(data, offsetDays) {
-      const g = data.date.gregorian;
-      const h = data.date.hijri;
-      const tz = data.meta.timezone;
-      const lat = data.meta.latitude?.toFixed?.(4);
-      const lon = data.meta.longitude?.toFixed?.(4);
-
-      const base = addDays(new Date(), offsetDays);
-      document.getElementById("gregDate").textContent = fmtDate(base);
-      document.getElementById("hijriDate").textContent = `${h.day}. ${h.month.ar} ${h.year}`;
-      document.getElementById("tzBadge").textContent = `Zeitzone: ${tz}`;
-      document.getElementById("coordsBadge").textContent = (lat && lon) ? `Koordinaten: ${lat}, ${lon}` : "Koordinaten: –";
-      document.getElementById("metaLine").textContent = `Berechnungsmethode: Muslim World League • Schule: Hanafi • Stadt: ${CITY}`;
-      document.getElementById("methodLine").textContent = `Quelle: AlAdhan API • Datum: ${g.day}.${g.month.number}.${g.year}`;
-    }
-
-    // Tabelle und Status
-    function buildTableAndStatus(data) {
-      const tbody = document.getElementById("tableBody");
-      tbody.innerHTML = "";
-
-      const times = data.timings;
-      const base = addDays(new Date(), dayOffset);
-      const now = new Date();
-
-      // Entries mit Date-Objekten
-      const entries = PRAYER_KEYS.map(key => {
-        const raw = times[key]; // "HH:MM"
-        const localDate = makeLocalDateFromHHMM(base, raw);
-        // Deutsch 24h-Format:
-        const timeStr = fmtTime(localDate);
-        return { key, label: key, timeStr, when: localDate };
-      });
-
-      // Aktuell/Nächstes bestimmen
-      let currentIdx = -1;
-      for (let i = 0; i < entries.length; i++) {
-        const start = entries[i].when;
-        const end = entries[i + 1]?.when ?? null;
-        if (end) {
-          if (now >= start && now < end) { currentIdx = i; break; }
-        } else {
-          if (now >= start) { currentIdx = i; break; }
-        }
-      }
-      let nextIdx = -1;
-      if (currentIdx >= 0) {
-        nextIdx = currentIdx + 1 < entries.length ? currentIdx + 1 : -1;
-      } else {
-        nextIdx = entries.findIndex(e => e.when > now);
-      }
-
-      // Sunrise als Zusatz
-      const sunrise = fmtTime(makeLocalDateFromHHMM(base, times["Sunrise"]));
-      addRow("Sunrise", sunrise, null);
-
-      // Gebete
-      entries.forEach((e, i) => {
-        let status = null;
-        if (i === currentIdx) status = "aktuell";
-        else if (i === nextIdx) status = "als nächstes";
-        addRow(e.label, e.timeStr, status);
-      });
-
-      // Nächstes-Gebet-Widget setzen
-      setupNextPrayerWidget(entries, nextIdx, now);
-      
-      function addRow(label, timeStr, status) {
-        const row = document.createElement("div");
-        row.className = "row";
-        const statusHtml = status
-          ? `<span class="status ${status === "aktuell" ? "now" : "next"}">${status}</span>`
-          : `<span class="muted">–</span>`;
-        row.innerHTML = `
-          <div>${translateLabel(label)}</div>
-          <div class="mono">${timeStr}</div>
-          <div>${statusHtml}</div>
-        `;
-        tbody.appendChild(row);
-      }
-    }
-
-    // Übersetzungen der Gebetsnamen
-    function translateLabel(key) {
-      const map = {
-        Fajr: "Fajr (Morgendämmerung)",
-        Dhuhr: "Dhuhr (Mittagsgebet)",
-        Asr: "Asr (Nachmittagsgebet)",
-        Maghrib: "Maghrib (Abendgebet)",
-        Isha: "Isha (Nachtgebet)",
-        Sunrise: "Sonnenaufgang"
-      };
-      return map[key] || key;
-    }
-
-    // Nächstes-Gebet-Widget inkl. Countdown
-    async function setupNextPrayerWidget(entries, nextIdx, now) {
-      const nextNameEl = document.getElementById("nextName");
-      const nextTimeEl = document.getElementById("nextTime");
-      const countdownEl = document.getElementById("countdown");
-      if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
-
-      let targetName = null;
-      let targetTimeStr = null;
-      let targetWhen = null;
-
-      if (nextIdx >= 0) {
-        const e = entries[nextIdx];
-        targetName = translateLabel(e.label);
-        targetTimeStr = e.timeStr;
-        targetWhen = e.when;
-      } else {
-        // Nach Isha: nächstes Gebet ist Fajr des nächsten Tages
-        try {
-          if (!nextDayData) {
-            nextDayData = await fetchTimingsByCity(dayOffset + 1);
-          }
-          const fajrStr = nextDayData.timings.Fajr;
-          const baseNext = addDays(new Date(), dayOffset + 1);
-          const fajrWhen = makeLocalDateFromHHMM(baseNext, fajrStr);
-          targetName = translateLabel("Fajr") + " (nächster Tag)";
-          targetTimeStr = fmtTime(fajrWhen);
-          targetWhen = fajrWhen;
-        } catch (e) {
-          targetName = "Fajr (nächster Tag)";
-          targetTimeStr = "–";
-          targetWhen = null;
-        }
-      }
-
-      nextNameEl.textContent = targetName || "–";
-      nextTimeEl.textContent = targetTimeStr || "–";
-
-      if (!targetWhen) {
-        countdownEl.textContent = "–";
-        return;
-      }
-
-      function updateCountdown() {
-        const nowLocal = new Date();
-        const diffMs = targetWhen - nowLocal;
-        if (diffMs <= 0) {
-          countdownEl.textContent = "00:00:00";
-          return;
-        }
-        const sec = Math.floor(diffMs / 1000);
-        const hh = pad2(Math.floor(sec / 3600));
-        const mm = pad2(Math.floor((sec % 3600) / 60));
-        const ss = pad2(sec % 60);
-        countdownEl.textContent = `${hh}:${mm}:${ss}`;
-      }
-      updateCountdown();
-      countdownTimer = setInterval(updateCountdown, 1000);
-    }
-
-    // Refresh
-    async function refresh() {
-      try {
-        document.getElementById("metaLine").textContent = "Lade Daten …";
-        nextDayData = null; // invalidieren, falls Tag geändert wurde
-        const data = await fetchTimingsByCity(dayOffset);
-        currentData = data;
-        renderMeta(data, dayOffset);
-        buildTableAndStatus(data);
-        document.getElementById("metaLine").textContent = "Daten geladen.";
-      } catch (e) {
-        document.getElementById("metaLine").textContent = "Fehler beim Laden der Gebetszeiten.";
-        console.error(e);
-      }
-    }
-
-    // Navigation
-    document.getElementById("prevBtn").addEventListener("click", () => { dayOffset -= 1; refresh(); });
-    document.getElementById("nextBtn").addEventListener("click", () => { dayOffset += 1; refresh(); });
-    document.getElementById("todayBtn").addEventListener("click", () => { dayOffset = 0; refresh(); });
-
-    // Initial laden
-    refresh();
-  </script>
+async function refresh(){const d=await fetchData(dayOffset);render(d);}
+document.getElementById("prevBtn").onclick=()=>{dayOffset--;refresh();};
+document.getElementById("nextBtn").onclick=()=>{dayOffset++;refresh();};
+document.getElementById("todayBtn").onclick=()=>{dayOffset=0;refresh();};
+refresh();
+</script>
 </body>
 </html>
