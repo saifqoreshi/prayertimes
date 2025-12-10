@@ -3,22 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <title>Gebetszeiten Gosheim</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  body { font-family: Arial, sans-serif; background:#0f172a; color:#e5e7eb; margin:0; padding:16px; }
-  h1 { font-size:1.2rem; margin:0 0 8px; }
-  table { width:100%; border-collapse:collapse; margin-bottom:12px; }
-  th, td { padding:6px; text-align:left; font-size:0.9rem; }
-  th { border-bottom:1px solid #1f2937; }
+  body { font-family: Arial, sans-serif; background:#0f172a; color:#e5e7eb; margin:0; padding:12px; }
+  h1 { font-size:1rem; margin:0 0 8px; text-align:center; }
+  table { width:100%; border-collapse:collapse; margin-bottom:10px; font-size:0.85rem; }
+  th, td { padding:4px; text-align:left; }
+  th { border-bottom:1px solid #1f2937; font-weight:600; }
   tr:nth-child(even){background:#111827;}
-  .status { font-size:0.7rem; padding:2px 6px; border-radius:6px; }
+  .status { font-size:0.65rem; padding:2px 5px; border-radius:6px; }
   .now { background:#f59e0b33; color:#f59e0b; }
   .next { background:#22c55e33; color:#22c55e; }
-  .card { background:#111827; padding:10px; border-radius:8px; margin-bottom:12px; }
+  .card { background:#111827; padding:8px; border-radius:8px; margin-bottom:10px; font-size:0.85rem; }
   .count { font-size:1rem; font-weight:bold; }
-  .controls { margin:8px 0; }
-  .btn { background:#1f2937; color:#e5e7eb; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:0.8rem; }
+  .controls { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:8px 0; }
+  .btn { flex:1; min-width:80px; background:#1f2937; color:#e5e7eb; border:none; padding:6px; border-radius:6px; cursor:pointer; font-size:0.75rem; }
   .btn:hover { background:#374151; }
-  .footer { font-size:0.7rem; color:#9ca3af; margin-top:8px; }
+  .footer { font-size:0.65rem; color:#9ca3af; text-align:center; margin-top:6px; }
 </style>
 </head>
 <body>
@@ -29,7 +30,7 @@
   </table>
 
   <div class="card">
-    <div><b>Nächstes Gebet:</b> <span id="nextName">–</span></div>
+    <div><b>Nächstes:</b> <span id="nextName">–</span></div>
     <div><b>Zeit:</b> <span id="nextTime">–</span></div>
     <div><b>Countdown:</b> <span id="countdown" class="count">–</span></div>
   </div>
@@ -65,7 +66,7 @@ async function fetchData(offset){
 function render(data){
   document.getElementById("gregDate").textContent=fmtDate(addDays(new Date(),dayOffset));
   document.getElementById("hijriDate").textContent=`${data.date.hijri.day}.${data.date.hijri.month.ar} ${data.date.hijri.year}`;
-  document.getElementById("settingsLine").textContent=`Methode: Muslim World League | Schule: Hanafi | Stadt: ${CITY} | TZ: ${data.meta.timezone}`;
+  document.getElementById("settingsLine").textContent=`Methode: MWL | Schule: Hanafi | Stadt: ${CITY} | TZ: ${data.meta.timezone}`;
 
   const tbody=document.querySelector("#prayerTable tbody"); tbody.innerHTML="";
   const keys=["Fajr","Sunrise","Dhuhr","Asr","Maghrib","Isha"];
