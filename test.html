@@ -1,114 +1,126 @@
-<!DOCTYPE html>
-<html lang="de">
+<!DOCTYPE html><html lang="de">
 <head>
-<meta charset="UTF-8">
-<title>Gebetszeiten Gosheim</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Prayer Times – Gosheim, Germany</title>
 <style>
-  body { font-family: Arial, sans-serif; background:#0f172a; color:#e5e7eb; margin:0; padding:14px; }
-  h1 { font-size:1.1rem; margin:0 0 10px; text-align:center; }
-  table { width:100%; border-collapse:collapse; margin-bottom:12px; font-size:1rem; }
-  th, td { padding:8px; text-align:left; }
-  th { border-bottom:2px solid #1f2937; font-weight:600; }
-  tr:nth-child(even){background:#111827;}
-  .status { font-size:0.75rem; padding:3px 7px; border-radius:6px; }
-  .now { background:#f59e0b33; color:#f59e0b; }
-  .next { background:#22c55e33; color:#22c55e; }
-  .card { background:#111827; padding:10px; border-radius:8px; margin-bottom:12px; font-size:0.9rem; }
-  .count { font-size:1.1rem; font-weight:bold; }
-  .controls { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:8px 0; }
-  .btn { flex:1; min-width:90px; background:#1f2937; color:#e5e7eb; border:none; padding:7px; border-radius:6px; cursor:pointer; font-size:0.8rem; }
-  .btn:hover { background:#374151; }
-  .footer { font-size:0.7rem; color:#9ca3af; text-align:center; margin-top:6px; }
+:root{
+  --bg:#0b0f14;
+  --card:#111722;
+  --accent:#4ea1ff;
+  --text:#e5e7eb;
+  --muted:#9ca3af;
+  --radius:14px;
+  --shadow:0 0 20px rgba(0,0,0,0.35);
+}
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  padding:20px;
+}
+.container{
+  max-width:480px;
+  margin:auto;
+}
+.card{
+  background:var(--card);
+  padding:20px;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  margin-bottom:20px;
+}
+.date-nav{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:15px;
+}
+.date-nav button{
+  background:var(--accent);
+  border:none;
+  padding:10px 14px;
+  border-radius:var(--radius);
+  color:#fff;
+  font-size:14px;
+  cursor:pointer;
+}
+.date-display{
+  font-size:16px;
+  font-weight:bold;
+  text-align:center;
+  flex:1;
+  color:var(--text);
+}
+.prayer-item{
+  display:flex;
+  justify-content:space-between;
+  padding:12px 0;
+  border-bottom:1px solid #1f2937;
+}
+.prayer-item:last-child{
+  border-bottom:none;
+}
 </style>
 </head>
 <body>
-  <h1>Gebetszeiten Gosheim</h1>
-  <table id="prayerTable">
-    <thead><tr><th>Gebet</th><th>Zeit</th><th>Status</th></tr></thead>
-    <tbody></tbody>
-  </table>
-
+<div class="container">
   <div class="card">
-    <div><b>Nächstes:</b> <span id="nextName">–</span></div>
-    <div><b>Zeit:</b> <span id="nextTime">–</span></div>
-    <div><b>Countdown:</b> <span id="countdown" class="count">–</span></div>
+    <div class="date-nav">
+      <button id="prevBtn">◀</button>
+      <div class="date-display" id="dateDisplay"></div>
+      <button id="todayBtn">Today</button>
+      <button id="nextBtn">▶</button>
+    </div><div id="prayerTimes"></div>
+
   </div>
+</div><script>
+let currentDate = new Date();
 
-  <div class="controls">
-    <button class="btn" id="prevBtn">← Vorher</button>
-    <button class="btn" id="todayBtn">Heute</button>
-    <button class="btn" id="nextBtn">Nächster →</button>
-  </div>
-
-  <div class="card">
-    <div><b>Datum:</b> <span id="gregDate">–</span> | <b>Hijri:</b> <span id="hijriDate">–</span></div>
-  </div>
-
-  <div class="footer" id="settingsLine">–</div>
-
-<script>
-const CITY="Gosheim", COUNTRY="Germany", METHOD=3, SCHOOL=1;
-let dayOffset=0, countdownTimer=null;
-
-function pad2(n){return String(n).padStart(2,"0");}
-function addDays(d,n){let x=new Date(d);x.setDate(x.getDate()+n);return x;}
-function fmtDate(d){return new Intl.DateTimeFormat("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",year:"numeric"}).format(d);}
-function fmtTime(d){return new Intl.DateTimeFormat("de-DE",{hour:"2-digit",minute:"2-digit"}).format(d);}
-
-async function fetchData(offset){
-  const base=addDays(new Date(),offset);
-  const dd=pad2(base.getDate()), mm=pad2(base.getMonth()+1), yyyy=base.getFullYear();
-  const url=`https://api.aladhan.com/v1/timingsByCity?city=${CITY}&country=${COUNTRY}&method=${METHOD}&school=${SCHOOL}&date=${dd}-${mm}-${yyyy}`;
-  const res=await fetch(url); const j=await res.json(); return j.data;
+function formatDate(date){
+  return date.toLocaleDateString("de-DE", {
+    weekday:"long", year:"numeric", month:"long", day:"numeric"
+  });
 }
 
-function render(data){
-  document.getElementById("gregDate").textContent=fmtDate(addDays(new Date(),dayOffset));
-  document.getElementById("hijriDate").textContent=`${data.date.hijri.day}.${data.date.hijri.month.ar} ${data.date.hijri.year}`;
-  document.getElementById("settingsLine").textContent=`Methode: MWL | Schule: Hanafi | Stadt: ${CITY} | TZ: ${data.meta.timezone}`;
+function loadPrayerTimes(date){
+  // Dummy times – replace with real API or calculations
+  const times = {
+    Fajr: "06:12",
+    Dhuhr: "12:37",
+    Asr: "14:55",
+    Maghrib: "17:23",
+    Isha: "18:45"
+  };
 
-  const tbody=document.querySelector("#prayerTable tbody"); tbody.innerHTML="";
-  const keys=["Fajr","Dhuhr","Asr","Maghrib","Isha"]; // Sunrise separat
-  const now=new Date();
-  const entries=keys.map(k=>{
-    const [h,m]=data.timings[k].split(":").map(Number);
-    const d=addDays(new Date(),dayOffset); d.setHours(h,m,0,0);
-    return {key:k,time:fmtTime(d),when:d};
-  });
-  let current=-1,next=-1;
-  for(let i=0;i<entries.length;i++){if(now>=entries[i].when && (!entries[i+1]||now<entries[i+1].when)){current=i;next=i+1;break;}}
-  if(current===-1) next=entries.findIndex(e=>e.when>now);
+  document.getElementById("dateDisplay").textContent = formatDate(date);
 
-  // Sunrise nur anzeigen, kein Status
-  const sunriseTime=fmtTime(addDays(new Date(),dayOffset).setHours(...data.timings["Sunrise"].split(":").map(Number)));
-  tbody.innerHTML+=`<tr><td>Sonnenaufgang</td><td>${data.timings["Sunrise"]}</td><td></td></tr>`;
-
-  entries.forEach((e,i)=>{
-    let status=""; if(i===current)status="now"; else if(i===next)status="next";
-    tbody.innerHTML+=`<tr><td>${e.key}</td><td>${e.time}</td><td>${status?'<span class="status '+status+'">'+(status==="now"?"aktuell":"nächstes")+'</span>':""}</td></tr>`;
-  });
-
-  const nextEl=next>=0?entries[next]:null;
-  document.getElementById("nextName").textContent=nextEl?nextEl.key:"–";
-  document.getElementById("nextTime").textContent=nextEl?nextEl.time:"–";
-  if(countdownTimer)clearInterval(countdownTimer);
-  if(nextEl){
-    function tick(){
-      const diff=nextEl.when-new Date();
-      if(diff<=0){document.getElementById("countdown").textContent="00:00:00";return;}
-      const s=Math.floor(diff/1000),h=pad2(Math.floor(s/3600)),m=pad2(Math.floor((s%3600)/60)),sec=pad2(s%60);
-      document.getElementById("countdown").textContent=`${h}:${m}:${sec}`;
-    }
-    tick(); countdownTimer=setInterval(tick,1000);
-  } else document.getElementById("countdown").textContent="–";
+  let html = "";
+  for(const [name, time] of Object.entries(times)){
+    html += `<div class='prayer-item'><span>${name}</span><span>${time}</span></div>`;
+  }
+  document.getElementById("prayerTimes").innerHTML = html;
 }
 
-async function refresh(){const d=await fetchData(dayOffset);render(d);}
-document.getElementById("prevBtn").onclick=()=>{dayOffset--;refresh();};
-document.getElementById("nextBtn").onclick=()=>{dayOffset++;refresh();};
-document.getElementById("todayBtn").onclick=()=>{dayOffset=0;refresh();};
-refresh();
-</script>
-</body>
+// Navigation
+
+document.getElementById("prevBtn").addEventListener("click", () => {
+  currentDate.setDate(currentDate.getDate() - 1);
+  loadPrayerTimes(currentDate);
+});
+
+document.getElementById("nextBtn").addEventListener("click", () => {
+  currentDate.setDate(currentDate.getDate() + 1);
+  loadPrayerTimes(currentDate);
+});
+
+document.getElementById("todayBtn").addEventListener("click", () => {
+  currentDate = new Date();
+  loadPrayerTimes(currentDate);
+});
+
+// Initial load
+loadPrayerTimes(currentDate);
+</script></body>
 </html>
