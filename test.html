@@ -83,7 +83,7 @@ h1 {
   text-align: center;
 }
 
-button, input[type=date], select {
+button, input, select {
   padding: 0.3rem 0.6rem;
   border-radius: 0.5rem;
   border: none;
@@ -94,6 +94,7 @@ button, input[type=date], select {
 button {
   background-color: var(--accent);
   color: #fff;
+  cursor: pointer;
 }
 
 .monthly-card {
@@ -120,6 +121,8 @@ button {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+  max-height: 350px;
+  overflow-y: auto;
 }
 
 .monthly-row {
@@ -141,15 +144,12 @@ button {
   margin-bottom: 0.5rem;
   background-color: var(--accent);
   color: #fff;
+  cursor: pointer;
 }
 
 @media (max-width: 400px) {
-  h1 {
-    font-size: 1.3rem;
-  }
-  .countdown {
-    font-size: 1rem;
-  }
+  h1 { font-size: 1.3rem; }
+  .countdown { font-size: 1rem; }
 }
 </style>
 </head>
@@ -157,7 +157,7 @@ button {
 
 <h1>Prayer Times – Gosheim, Germany</h1>
 
-<!-- Date Navigation Controls for Main Table -->
+<!-- Date navigation for main table -->
 <div style="margin-bottom:0.5rem; display:flex; align-items:center; gap:0.3rem; flex-wrap:wrap;">
   <button onclick="prevDay()">Prev</button>
   <input type="date" id="main-date" onchange="fetchPrayerTimesForDate()">
@@ -176,7 +176,7 @@ button {
   <div class="countdown" id="next-prayer">Next prayer in —</div>
 </div>
 
-<!-- Monthly Calendar Toggle -->
+<!-- Monthly calendar toggle -->
 <button class="toggle-btn" onclick="toggleMonthly()">Show/Hide Monthly Calendar</button>
 
 <div class="monthly-card" id="monthly-card">
@@ -205,40 +205,36 @@ const prayerRows = {
   isha: document.getElementById("isha-row"),
 };
 
-// Date picker for main table
-const mainDateInput = document.getElementById("main-date");
+// Main table date navigation
 let mainDate = new Date();
+const mainDateInput = document.getElementById("main-date");
 mainDateInput.value = mainDate.toISOString().split("T")[0];
 
 function prevDay(){ mainDate.setDate(mainDate.getDate()-1); updateMainDate(); fetchPrayerTimesForDate();}
 function nextDay(){ mainDate.setDate(mainDate.getDate()+1); updateMainDate(); fetchPrayerTimesForDate();}
 function goToday(){ mainDate = new Date(); updateMainDate(); fetchPrayerTimesForDate();}
 function updateMainDate(){ mainDateInput.value = mainDate.toISOString().split("T")[0];}
+mainDateInput.addEventListener("change",()=>{ mainDate = new Date(mainDateInput.value); fetchPrayerTimesForDate(); });
 
-mainDateInput.addEventListener("change",()=>{
-  mainDate = new Date(mainDateInput.value);
-  fetchPrayerTimesForDate();
-});
-
-// Convert 24h to 12h with AM/PM for main table
+// Convert 24h -> 12h with AM/PM
 function to12HourAMPM(timeStr){
   let [h,m] = timeStr.split(":").map(Number);
   const ampm = h<12?"AM":"PM";
   h=h%12||12;
-  return `${h}:${m.toString().padStart(2,"0")} ${ampm`;
+  return `${h}:${m.toString().padStart(2,"0")} ${ampm}`;
 }
 
-// Convert 24h to 12h for monthly table
+// Convert 24h -> 12h for monthly table (no AM/PM)
 function to12Hour(timeStr){
-  let [h,m]=timeStr.split(":").map(Number);
-  h=h%12||12;
+  let [h,m] = timeStr.split(":").map(Number);
+  h = h%12||12;
   return `${h}:${m.toString().padStart(2,"0")}`;
 }
 
-// Main table timings
-let timings={};
+// Fetch prayer times for main table
+let timings = {};
 function fetchPrayerTimesForDate(){
-  const dateStr = mainDate.toISOString().split("T")[0];
+  const dateStr = `${mainDate.getDate().toString().padStart(2,"0")}-${(mainDate.getMonth()+1).toString().padStart(2,"0")}-${mainDate.getFullYear()}`;
   fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=${country}&method=${method}&date=${dateStr}`)
   .then(res=>res.json())
   .then(data=>{
@@ -252,24 +248,26 @@ function fetchPrayerTimesForDate(){
   });
 }
 
-// Countdown & highlight current/next
+// Countdown and highlight current/next prayer
 function updateCountdown(){
-  const now=new Date();
-  const today=mainDate.toISOString().split("T")[0];
-  let nextPrayer=null, currentPrayer=null, nextTime=null;
-  for(let i=0;i<prayerIds.length;i++){
-    const p=prayerIds[i];
-    const tStr=`${today}T${timings[p]}:00`;
-    const t=new Date(tStr);
+  const now = new Date();
+  const todayStr = mainDate.toISOString().split("T")[0];
+  let nextPrayer=null,currentPrayer=null,nextTime=null;
+
+  for(let p of prayerIds){
+    const tStr = `${mainDate.getFullYear()}-${(mainDate.getMonth()+1).toString().padStart(2,"0")}-${mainDate.getDate().toString().padStart(2,"0")}T${timings[p]}:00`;
+    const t = new Date(tStr);
     if(now>=t) currentPrayer=p;
-    if(t>now && !nextPrayer){ nextPrayer=p; nextTime=t;}
+    if(t>now && !nextPrayer){ nextPrayer=p; nextTime=t; }
   }
-  if(!nextPrayer){
-    const tomorrow=new Date(mainDate);
+
+  if(!nextPrayer){ // next day Fajr
+    const tomorrow = new Date(mainDate);
     tomorrow.setDate(mainDate.getDate()+1);
-    const tomorrowDate=tomorrow.toISOString().split("T")[0];
-    nextPrayer="fajr"; nextTime=new Date(`${tomorrowDate}T${timings.fajr}:00`);
+    nextPrayer="fajr";
+    nextTime = new Date(`${tomorrow.getFullYear()}-${(tomorrow.getMonth()+1).toString().padStart(2,"0")}-${tomorrow.getDate().toString().padStart(2,"0")}T${timings.fajr}:00`);
   }
+
   prayerIds.forEach(p=>{prayerRows[p].classList.remove("current","next");});
   if(currentPrayer) prayerRows[currentPrayer].classList.add("current");
   if(nextPrayer) prayerRows[nextPrayer].classList.add("next");
@@ -285,42 +283,41 @@ function updateCountdown(){
 setInterval(updateCountdown,1000);
 fetchPrayerTimesForDate();
 
-// Monthly Calendar
+// Monthly calendar
 const monthlyCard = document.getElementById("monthly-card");
-function toggleMonthly(){
-  monthlyCard.style.display = monthlyCard.style.display==="flex"?"none":"flex";
-  if(monthlyCard.style.display==="flex") fetchMonthly();
-}
+function toggleMonthly(){ monthlyCard.style.display = monthlyCard.style.display==="flex"?"none":"flex"; if(monthlyCard.style.display==="flex") fetchMonthly(); }
 
 const monthSelect = document.getElementById("month-select");
 const yearSelect = document.getElementById("year-select");
-
-// Populate month/year selects
 const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-months.forEach((m,i)=>{const opt=document.createElement("option");opt.value=i;opt.text=m;monthSelect.add(opt);});
+months.forEach((m,i)=>{ const opt=document.createElement("option"); opt.value=i; opt.text=m; monthSelect.add(opt); });
 const currentYear = new Date().getFullYear();
-for(let y=currentYear-2;y<=currentYear+2;y++){const opt=document.createElement("option");opt.value=y;opt.text=y;yearSelect.add(opt);}
+for(let y=currentYear-2;y<=currentYear+2;y++){ const opt=document.createElement("option"); opt.value=y; opt.text=y; yearSelect.add(opt); }
 monthSelect.value = mainDate.getMonth();
 yearSelect.value = mainDate.getFullYear();
 
 function fetchMonthly(){
   const month = parseInt(monthSelect.value);
   const year = parseInt(yearSelect.value);
-  const tableEl=document.getElementById("monthly-table");
+  const tableEl = document.getElementById("monthly-table");
   tableEl.innerHTML="";
   const daysInMonth = new Date(year, month+1, 0).getDate();
+  const promises = [];
   for(let d=1;d<=daysInMonth;d++){
-    const dateStr=`${year}-${(month+1).toString().padStart(2,"0")}-${d.toString().padStart(2,"0")}`;
-    fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=${country}&method=${method}&date=${dateStr}`)
-    .then(res=>res.json())
-    .then(data=>{
-      const row=document.createElement("div");
-      row.className="monthly-row";
-      const timingsData=data.data.timings;
-      row.innerHTML=`${dateStr} - ${prayerIds.map(p=>to12Hour(timingsData[p.charAt(0).toUpperCase()+p.slice(1)])).join(" | ")}`;
-      tableEl.appendChild(row);
-    });
+    const dateStr = `${d.toString().padStart(2,"0")}-${(month+1).toString().padStart(2,"0")}-${year}`;
+    promises.push(
+      fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=${country}&method=${method}&date=${dateStr}`)
+      .then(res=>res.json())
+      .then(data=>{
+        const row=document.createElement("div");
+        row.className="monthly-row";
+        const t=data.data.timings;
+        row.innerHTML=`${dateStr} - ${prayerIds.map(p=>to12Hour(t[p.charAt(0).toUpperCase()+p.slice(1)])).join(" | ")}`;
+        tableEl.appendChild(row);
+      })
+    );
   }
+  Promise.all(promises);
 }
 </script>
 
