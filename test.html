@@ -5,74 +5,92 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prayer Times – Gosheim, Germany</title>
 <style>
-  /* Root colors */
-  :root {
-    --bg: #0b0f14;
-    --card: #111722;
-    --text: #e6edf3;
-    --muted: #9fb0c0;
-    --accent: #3aaaff;
-  }
+:root {
+  --bg: #0b0f14;
+  --card: #111722;
+  --text: #e6edf3;
+  --muted: #9fb0c0;
+  --accent: #3aaaff;
+  --current: #ff6b6b;
+  --next: #3aaaff;
+}
 
-  body {
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--bg);
-    color: var(--text);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 1rem;
-  }
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+}
 
+h1 {
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.card {
+  background-color: var(--card);
+  border-radius: 1rem;
+  padding: 1rem;
+  width: 100%;
+  max-width: 450px;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.prayer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.prayer-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+  background-color: #1a1f2b;
+  transition: background 0.3s;
+}
+
+.prayer-item.current {
+  background-color: var(--current);
+  font-weight: bold;
+  color: #fff;
+}
+
+.prayer-item.next {
+  background-color: var(--next);
+  font-weight: bold;
+  color: #fff;
+}
+
+.countdown {
+  text-align: center;
+  font-size: 1.2rem;
+  margin-top: 0.8rem;
+  color: var(--accent);
+}
+
+.footer {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 1rem;
+  text-align: center;
+}
+
+@media (max-width: 400px) {
   h1 {
-    margin-bottom: 0.5rem;
-    text-align: center;
+    font-size: 1.3rem;
   }
-
-  .card {
-    background-color: var(--card);
-    border-radius: 1rem;
-    padding: 1rem;
-    width: 100%;
-    max-width: 400px;
-    margin-bottom: 1rem;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  }
-
-  .prayer-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .prayer-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
-    background-color: #1a1f2b;
-  }
-
-  .prayer-item.next {
-    background-color: var(--accent);
-    color: #fff;
-    font-weight: bold;
-  }
-
   .countdown {
-    text-align: center;
-    font-size: 1.2rem;
-    margin-top: 0.5rem;
-    color: var(--accent);
+    font-size: 1rem;
   }
-
-  .footer {
-    font-size: 0.75rem;
-    color: var(--muted);
-    margin-top: 1rem;
-    text-align: center;
-  }
+}
 </style>
 </head>
 <body>
@@ -97,9 +115,9 @@
 <script>
 const city = "Gosheim";
 const country = "Germany";
-const method = 3; // Muslim World League
+const method = 3;
 
-const prayerIds = ["fajr", "dhuhr", "asr", "maghrib", "isha"];
+const prayerIds = ["fajr","dhuhr","asr","maghrib","isha"];
 const prayerRows = {
   fajr: document.getElementById("fajr-row"),
   dhuhr: document.getElementById("dhuhr-row"),
@@ -108,62 +126,77 @@ const prayerRows = {
   isha: document.getElementById("isha-row"),
 };
 
+// Convert 24-hour time to 12-hour without am/pm
+function to12Hour(timeStr) {
+  let [hour, min] = timeStr.split(":").map(Number);
+  hour = hour % 12 || 12;
+  return `${hour}:${min.toString().padStart(2,"0")}`;
+}
+
+// Fetch prayer times
+let timings = {};
 function fetchPrayerTimes() {
   fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=${country}&method=${method}`)
     .then(res => res.json())
     .then(data => {
-      const timings = data.data.timings;
-      prayerIds.forEach(prayer => {
-        document.getElementById(prayer).textContent = timings[prayer.charAt(0).toUpperCase() + prayer.slice(1)];
+      timings = {};
+      prayerIds.forEach(p => {
+        const t24 = data.data.timings[p.charAt(0).toUpperCase() + p.slice(1)];
+        timings[p] = t24;
+        document.getElementById(p).textContent = to12Hour(t24);
       });
-      updateNextPrayer(timings);
+      updateCountdown();
     });
 }
 
-function updateNextPrayer(timings) {
+// Update current and next prayer & countdown
+function updateCountdown() {
   const now = new Date();
-  const today = now.toISOString().split('T')[0]; // yyyy-mm-dd
-
+  const today = now.toISOString().split("T")[0];
+  
   let nextPrayer = null;
+  let currentPrayer = null;
   let nextTime = null;
 
-  for (let prayer of prayerIds) {
-    const timeStr = `${today}T${timings[prayer.charAt(0).toUpperCase() + prayer.slice(1)]}:00`;
-    const prayerTime = new Date(timeStr);
-    if (prayerTime > now) {
-      nextPrayer = prayer;
-      nextTime = prayerTime;
-      break;
+  for (let i = 0; i < prayerIds.length; i++) {
+    const p = prayerIds[i];
+    const tStr = `${today}T${timings[p]}:00`;
+    const t = new Date(tStr);
+    if (now >= t) currentPrayer = p;
+    if (t > now && !nextPrayer) {
+      nextPrayer = p;
+      nextTime = t;
     }
   }
 
+  // If all prayers passed, next is tomorrow Fajr
   if (!nextPrayer) {
-    // If all prayers passed, take tomorrow Fajr
-    const tomorrow = new Date(now);
-    tomorrow.setDate(now.getDate() + 1);
-    const tomorrowDate = tomorrow.toISOString().split('T')[0];
+    const tomorrow = new Date();
+    tomorrow.setDate(now.getDate()+1);
+    const tomorrowDate = tomorrow.toISOString().split("T")[0];
     nextPrayer = "fajr";
-    nextTime = new Date(`${tomorrowDate}T${timings.Fajr}:00`);
+    nextTime = new Date(`${tomorrowDate}T${timings.fajr}:00`);
   }
 
-  // Highlight next prayer
-  prayerIds.forEach(prayer => {
-    prayerRows[prayer].classList.remove("next");
+  // Highlight current & next
+  prayerIds.forEach(p => {
+    prayerRows[p].classList.remove("current","next");
   });
-  prayerRows[nextPrayer].classList.add("next");
+  if(currentPrayer) prayerRows[currentPrayer].classList.add("current");
+  if(nextPrayer) prayerRows[nextPrayer].classList.add("next");
 
   // Countdown
-  const countdownEl = document.getElementById("next-prayer");
-  const diffMs = nextTime - now;
-  const hours = Math.floor(diffMs / 1000 / 60 / 60);
-  const minutes = Math.floor((diffMs / 1000 / 60) % 60);
-  const seconds = Math.floor((diffMs / 1000) % 60);
-  countdownEl.textContent = `Next prayer (${nextPrayer.charAt(0).toUpperCase() + nextPrayer.slice(1)}) in ${hours}h ${minutes}m ${seconds}s`;
+  const diff = nextTime - now;
+  const h = Math.floor(diff / 1000 / 60 / 60);
+  const m = Math.floor((diff / 1000 / 60) % 60);
+  const s = Math.floor((diff / 1000) % 60);
+  document.getElementById("next-prayer").textContent =
+    `Next prayer (${nextPrayer.charAt(0).toUpperCase()+nextPrayer.slice(1)}) in ${h}h ${m}m ${s}s`;
 }
 
-// Initial fetch and every minute update
+// Refresh countdown every second
+setInterval(updateCountdown, 1000);
 fetchPrayerTimes();
-setInterval(fetchPrayerTimes, 60000);
 </script>
 
 </body>
