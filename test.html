@@ -13,6 +13,8 @@
   --accent: #3aaaff;
   --current: #ff6b6b;
   --next: #3aaaff;
+  --today: #3aaaff;
+  --weekend: #2a2f3b;
 }
 
 body {
@@ -132,6 +134,16 @@ button {
   border-radius: 0.4rem;
   padding: 0.3rem 0.6rem;
   font-size: 0.85rem;
+}
+
+.monthly-row.today {
+  background-color: var(--today);
+  color: #fff;
+  font-weight: bold;
+}
+
+.monthly-row.weekend {
+  background-color: var(--weekend);
 }
 
 .legend {
@@ -302,17 +314,26 @@ function fetchMonthly(){
   const tableEl = document.getElementById("monthly-table");
   tableEl.innerHTML="";
   const daysInMonth = new Date(year, month+1, 0).getDate();
+  const today = new Date();
+  
   const promises = [];
-  for(let d=1;d<=daysInMonth;d++){
+  for(let d=1; d<=daysInMonth; d++){
+    const dateObj = new Date(year, month, d);
+    const dayOfWeek = dateObj.getDay(); // 0=Sunday,6=Saturday
+    const isWeekend = dayOfWeek===0 || dayOfWeek===6;
+    const isToday = today.getFullYear()===year && today.getMonth()===month && today.getDate()===d;
+    
     const dateStr = `${d.toString().padStart(2,"0")}-${(month+1).toString().padStart(2,"0")}-${year}`;
     promises.push(
       fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=${country}&method=${method}&date=${dateStr}`)
       .then(res=>res.json())
       .then(data=>{
-        const row=document.createElement("div");
-        row.className="monthly-row";
-        const t=data.data.timings;
-        row.innerHTML=`${dateStr} - ${prayerIds.map(p=>to12Hour(t[p.charAt(0).toUpperCase()+p.slice(1)])).join(" | ")}`;
+        const row = document.createElement("div");
+        row.className = "monthly-row";
+        if(isToday) row.classList.add("today");
+        if(isWeekend) row.classList.add("weekend");
+        const t = data.data.timings;
+        row.innerHTML = `${dateStr} - ${prayerIds.map(p=>to12Hour(t[p.charAt(0).toUpperCase()+p.slice(1)])).join(" | ")}`;
         tableEl.appendChild(row);
       })
     );
