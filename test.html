@@ -120,36 +120,32 @@ button {
 }
 
 .monthly-table {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  max-height: 350px;
-  overflow-y: auto;
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.monthly-row {
-  display: flex;
-  justify-content: space-between;
-  background-color: #1a1f2b;
-  border-radius: 0.4rem;
-  padding: 0.3rem 0.6rem;
+.monthly-table th, .monthly-table td {
+  border: 1px solid #444;
+  padding: 0.4rem 0.6rem;
   font-size: 0.85rem;
+  text-align: center;
 }
 
-.monthly-row.today {
-  background-color: var(--today);
+.monthly-table th {
+  background-color: #1f2430;
   color: #fff;
-  font-weight: bold;
 }
 
-.monthly-row.weekend {
-  background-color: var(--weekend);
+.monthly-table td {
+  background-color: #1a1f2b;
+  color: #e6edf3;
 }
 
 .legend {
   font-size: 0.75rem;
   color: var(--muted);
   text-align: center;
+  margin-top: 0.3rem;
 }
 
 .toggle-btn {
@@ -196,8 +192,22 @@ button {
     <select id="month-select" onchange="fetchMonthly()"></select>
     <select id="year-select" onchange="fetchMonthly()"></select>
   </div>
-  <div class="monthly-table" id="monthly-table"></div>
-  <div class="legend">Times in 12-hour format, no AM/PM shown, no timezone info.</div>
+  <div style="overflow-x:auto;">
+    <table class="monthly-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Fajr</th>
+          <th>Dhuhr</th>
+          <th>Asr</th>
+          <th>Maghrib</th>
+          <th>Isha</th>
+        </tr>
+      </thead>
+      <tbody id="monthly-tbody"></tbody>
+    </table>
+  </div>
+  <div class="legend">Times in 12-hour format, no AM/PM, no timezone info. Today highlighted in blue, weekends in darker shade.</div>
 </div>
 
 <div class="footer">
@@ -263,7 +273,6 @@ function fetchPrayerTimesForDate(){
 // Countdown and highlight current/next prayer
 function updateCountdown(){
   const now = new Date();
-  const todayStr = mainDate.toISOString().split("T")[0];
   let nextPrayer=null,currentPrayer=null,nextTime=null;
 
   for(let p of prayerIds){
@@ -308,37 +317,43 @@ for(let y=currentYear-2;y<=currentYear+2;y++){ const opt=document.createElement(
 monthSelect.value = mainDate.getMonth();
 yearSelect.value = mainDate.getFullYear();
 
-function fetchMonthly(){
+async function fetchMonthly() {
   const month = parseInt(monthSelect.value);
   const year = parseInt(yearSelect.value);
-  const tableEl = document.getElementById("monthly-table");
-  tableEl.innerHTML="";
-  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const tbody = document.getElementById("monthly-tbody");
+  tbody.innerHTML = "";
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
   const today = new Date();
-  
+
   const promises = [];
-  for(let d=1; d<=daysInMonth; d++){
-    const dateObj = new Date(year, month, d);
-    const dayOfWeek = dateObj.getDay(); // 0=Sunday,6=Saturday
-    const isWeekend = dayOfWeek===0 || dayOfWeek===6;
-    const isToday = today.getFullYear()===year && today.getMonth()===month && today.getDate()===d;
-    
-    const dateStr = `${d.toString().padStart(2,"0")}-${(month+1).toString().padStart(2,"0")}-${year}`;
-    promises.push(
-      fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=${country}&method=${method}&date=${dateStr}`)
-      .then(res=>res.json())
-      .then(data=>{
-        const row = document.createElement("div");
-        row.className = "monthly-row";
-        if(isToday) row.classList.add("today");
-        if(isWeekend) row.classList.add("weekend");
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${d.toString().padStart(2, "0")}-${(month + 1).toString().padStart(2, "0")}-${year}`;
+    promises.push(fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=${country}&method=${method}&date=${dateStr}`)
+      .then(res => res.json())
+      .then(data => {
+        const row = document.createElement("tr");
+        const dateObj = new Date(year, month, d);
+        const dayOfWeek = dateObj.getDay();
+        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+        const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === d;
+
+        if (isToday) row.style.backgroundColor = "#3aaaff";
+        else if (isWeekend) row.style.backgroundColor = "#2a2f3b";
+
         const t = data.data.timings;
-        row.innerHTML = `${dateStr} - ${prayerIds.map(p=>to12Hour(t[p.charAt(0).toUpperCase()+p.slice(1)])).join(" | ")}`;
-        tableEl.appendChild(row);
+        row.innerHTML = `
+          <td>${dateStr}</td>
+          <td>${to12Hour(t.Fajr)}</td>
+          <td>${to12Hour(t.Dhuhr)}</td>
+          <td>${to12Hour(t.Asr)}</td>
+          <td>${to12Hour(t.Maghrib)}</td>
+          <td>${to12Hour(t.Isha)}</td>
+        `;
+        tbody.appendChild(row);
       })
     );
   }
-  Promise.all(promises);
+  await Promise.all(promises);
 }
 </script>
 
