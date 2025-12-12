@@ -83,6 +83,66 @@ h1 {
   text-align: center;
 }
 
+button, input[type=date] {
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.5rem;
+  border: none;
+  margin: 0 0.2rem;
+  font-size: 0.9rem;
+}
+
+button {
+  background-color: var(--accent);
+  color: #fff;
+}
+
+.monthly-card {
+  background-color: var(--card);
+  border-radius: 1rem;
+  padding: 0.8rem;
+  width: 100%;
+  max-width: 450px;
+  margin-bottom: 1rem;
+  display: none;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.monthly-controls {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.monthly-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.monthly-row {
+  display: flex;
+  justify-content: space-between;
+  background-color: #1a1f2b;
+  border-radius: 0.4rem;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.9rem;
+}
+
+.legend {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.toggle-btn {
+  margin-bottom: 0.5rem;
+  background-color: var(--accent);
+  color: #fff;
+}
+
 @media (max-width: 400px) {
   h1 {
     font-size: 1.3rem;
@@ -108,6 +168,21 @@ h1 {
   <div class="countdown" id="next-prayer">Next prayer in —</div>
 </div>
 
+<button class="toggle-btn" onclick="toggleMonthly()">Show/Hide Monthly Calendar</button>
+
+<div class="monthly-card" id="monthly-card">
+  <div class="monthly-controls">
+    <button onclick="prevDate()">Prev</button>
+    <input type="date" id="month-date" onchange="fetchMonthly()">
+    <button onclick="nextDate()">Next</button>
+    <button onclick="goToday()">Today</button>
+  </div>
+  <div class="monthly-table" id="monthly-table">
+    <!-- Monthly prayer times will populate here -->
+  </div>
+  <div class="legend">Times in 12-hour format, no AM/PM shown, no timezone info.</div>
+</div>
+
 <div class="footer">
   Powered by AlAdhan API • Method: Muslim World League • School: Hanafi
 </div>
@@ -116,7 +191,6 @@ h1 {
 const city = "Gosheim";
 const country = "Germany";
 const method = 3;
-
 const prayerIds = ["fajr","dhuhr","asr","maghrib","isha"];
 const prayerRows = {
   fajr: document.getElementById("fajr-row"),
@@ -126,76 +200,103 @@ const prayerRows = {
   isha: document.getElementById("isha-row"),
 };
 
-// Convert 24-hour time to 12-hour without am/pm
-function to12Hour(timeStr) {
-  let [hour, min] = timeStr.split(":").map(Number);
-  hour = hour % 12 || 12;
-  return `${hour}:${min.toString().padStart(2,"0")}`;
+// Main prayers table: 12h format with AM/PM
+function to12HourAMPM(timeStr){
+  let [h, m] = timeStr.split(":").map(Number);
+  const ampm = h < 12 ? "AM" : "PM";
+  h = h % 12 || 12;
+  return `${h}:${m.toString().padStart(2,"0")} ${ampm}`;
 }
 
-// Fetch prayer times
+// Monthly table: 12h format, no AM/PM
+function to12Hour(timeStr){
+  let [h, m] = timeStr.split(":").map(Number);
+  h = h % 12 || 12;
+  return `${h}:${m.toString().padStart(2,"0")}`;
+}
+
+// Fetch today prayer times
 let timings = {};
-function fetchPrayerTimes() {
-  fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=${country}&method=${method}`)
-    .then(res => res.json())
-    .then(data => {
-      timings = {};
-      prayerIds.forEach(p => {
-        const t24 = data.data.timings[p.charAt(0).toUpperCase() + p.slice(1)];
-        timings[p] = t24;
-        document.getElementById(p).textContent = to12Hour(t24);
-      });
-      updateCountdown();
+function fetchPrayerTimes(dateStr=null){
+  let url = `https://api.aladhan.com/v1/timingsByCity?city=${city}&country=${country}&method=${method}`;
+  if(dateStr) url += `&date=${dateStr}`;
+  fetch(url).then(res=>res.json()).then(data=>{
+    timings = {};
+    prayerIds.forEach(p=>{
+      const t24 = data.data.timings[p.charAt(0).toUpperCase()+p.slice(1)];
+      timings[p]=t24;
+      document.getElementById(p).textContent = to12HourAMPM(t24);
     });
+    updateCountdown();
+  });
 }
 
-// Update current and next prayer & countdown
-function updateCountdown() {
+// Update current & next prayer + live countdown
+function updateCountdown(){
   const now = new Date();
   const today = now.toISOString().split("T")[0];
-  
-  let nextPrayer = null;
-  let currentPrayer = null;
-  let nextTime = null;
-
-  for (let i = 0; i < prayerIds.length; i++) {
-    const p = prayerIds[i];
-    const tStr = `${today}T${timings[p]}:00`;
-    const t = new Date(tStr);
-    if (now >= t) currentPrayer = p;
-    if (t > now && !nextPrayer) {
-      nextPrayer = p;
-      nextTime = t;
+  let nextPrayer=null, currentPrayer=null, nextTime=null;
+  for(let i=0;i<prayerIds.length;i++){
+    const p=prayerIds[i];
+    const tStr=`${today}T${timings[p]}:00`;
+    const t=new Date(tStr);
+    if(now>=t) currentPrayer=p;
+    if(t>now && !nextPrayer){
+      nextPrayer=p;
+      nextTime=t;
     }
   }
-
-  // If all prayers passed, next is tomorrow Fajr
-  if (!nextPrayer) {
-    const tomorrow = new Date();
-    tomorrow.setDate(now.getDate()+1);
-    const tomorrowDate = tomorrow.toISOString().split("T")[0];
-    nextPrayer = "fajr";
-    nextTime = new Date(`${tomorrowDate}T${timings.fajr}:00`);
+  if(!nextPrayer){
+    const tomorrow=new Date(); tomorrow.setDate(now.getDate()+1);
+    const tomorrowDate=tomorrow.toISOString().split("T")[0];
+    nextPrayer="fajr"; nextTime=new Date(`${tomorrowDate}T${timings.fajr}:00`);
   }
-
-  // Highlight current & next
-  prayerIds.forEach(p => {
-    prayerRows[p].classList.remove("current","next");
-  });
+  prayerIds.forEach(p=>{prayerRows[p].classList.remove("current","next");});
   if(currentPrayer) prayerRows[currentPrayer].classList.add("current");
   if(nextPrayer) prayerRows[nextPrayer].classList.add("next");
 
-  // Countdown
-  const diff = nextTime - now;
-  const h = Math.floor(diff / 1000 / 60 / 60);
-  const m = Math.floor((diff / 1000 / 60) % 60);
-  const s = Math.floor((diff / 1000) % 60);
-  document.getElementById("next-prayer").textContent =
+  const diff=nextTime-now;
+  const h=Math.floor(diff/1000/60/60);
+  const m=Math.floor((diff/1000/60)%60);
+  const s=Math.floor((diff/1000)%60);
+  document.getElementById("next-prayer").textContent=
     `Next prayer (${nextPrayer.charAt(0).toUpperCase()+nextPrayer.slice(1)}) in ${h}h ${m}m ${s}s`;
 }
 
-// Refresh countdown every second
-setInterval(updateCountdown, 1000);
+// Toggle monthly calendar
+function toggleMonthly(){
+  const el=document.getElementById("monthly-card");
+  el.style.display = el.style.display==="flex"?"none":"flex";
+  if(el.style.display==="flex") fetchMonthly();
+}
+
+// Monthly calendar
+let monthlyDate = new Date();
+const monthInput = document.getElementById("month-date");
+monthInput.value = monthlyDate.toISOString().split("T")[0];
+
+function prevDate(){ monthlyDate.setDate(monthlyDate.getDate()-1); updateMonthInput(); fetchMonthly();}
+function nextDate(){ monthlyDate.setDate(monthlyDate.getDate()+1); updateMonthInput(); fetchMonthly();}
+function goToday(){ monthlyDate = new Date(); updateMonthInput(); fetchMonthly();}
+function updateMonthInput(){ monthInput.value = monthlyDate.toISOString().split("T")[0]; }
+
+function fetchMonthly(){
+  const dateStr = monthlyDate.toISOString().split("T")[0];
+  fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=${country}&method=${method}&date=${dateStr}`)
+  .then(res=>res.json())
+  .then(data=>{
+    const tableEl = document.getElementById("monthly-table");
+    tableEl.innerHTML="";
+    const timingsData=data.data.timings;
+    const row=document.createElement("div");
+    row.className="monthly-row";
+    row.innerHTML=`${dateStr} - ${prayerIds.map(p=>to12Hour(timingsData[p.charAt(0).toUpperCase()+p.slice(1)])).join(" | ")}`;
+    tableEl.appendChild(row);
+  });
+}
+
+// Update countdown every second
+setInterval(updateCountdown,1000);
 fetchPrayerTimes();
 </script>
 
