@@ -1,98 +1,170 @@
-<!DOCTYPE html><html lang="de">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prayer Times – Gosheim, Germany</title>
 <style>
-:root{
-  --bg:#0b0f14; --card:#111722; --text:#e6edf3; --muted:#9fb0c0;
-  --accent:#3aa3ff; --accent2:#25c2a0; --border:#233044; --radius:12px;
-  --shadow:0 6px 18px rgba(0,0,0,0.35);
-}
-*{box-sizing:border-box}
-body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);} 
-.app{max-width:740px;margin:0 auto;padding:12px 16px 24px;} 
-header{position:sticky;top:0;background:var(--card);padding:10px;border-bottom:1px solid var(--border);box-shadow:var(--shadow);z-index:2;} 
-header h1{margin:0;font-size:1rem;} 
-header .sub{font-size:0.9rem;color:var(--muted);margin-top:4px;} 
-.error{display:none;color:#ff788a;background:rgba(255,77,109,0.12);border:1px solid #ff4d6d;border-radius:10px;padding:8px;margin:10px 0;text-align:center;font-size:0.9rem;} 
-.date-nav{display:flex;justify-content:center;align-items:center;gap:8px;margin:12px 0;} 
-.date-nav button{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:1rem;cursor:pointer;} 
-.date-nav input[type="date"]{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:8px;font-size:0.9rem;text-align:center;} 
-.next-row{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:12px;box-shadow:var(--shadow);} 
-.next-row .next-prayer{text-align:left;font-weight:600;} 
-.next-row .countdown{text-align:right;font-weight:600;} 
-.next-row .label{font-size:0.85rem;color:var(--muted);} 
-table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden;} 
-th,td{padding:10px;border-bottom:1px solid var(--border);text-align:center;font-size:0.88rem;} 
-th{color:var(--muted);background:#0f1623;} 
-tr:last-child td{border-bottom:none;} 
-.row.current td:nth-child(2){color:var(--accent);font-weight:700;} 
-.row.next td:nth-child(2){color:var(--accent2);font-weight:700;} 
-.indicator{display:block;font-size:0.72rem;margin-top:4px;color:var(--muted);} 
-.row.current .indicator{color:var(--accent);} 
-.row.next .indicator{color:var(--accent2);} 
-.ramadan-widget{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-top:14px;text-align:center;box-shadow:var(--shadow);} 
-.ramadan-widget strong{color:var(--accent2);} 
-.ramadan-widget .sub{color:var(--muted);font-size:0.9rem;} 
-.calendar-toggle{text-align:center;margin:12px 0;} 
-.calendar-toggle button{background:var(--card);color:var(--text);border:2px solid var(--accent);border-radius:var(--radius);padding:10px 18px;cursor:pointer;font-size:0.95rem;font-weight:600;box-shadow:var(--shadow);transition:0.25s;} 
-.calendar-toggle button:hover{background:var(--accent);color:#fff;border-color:var(--accent2);} 
-.calendar-container{display:none;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-top:16px;box-shadow:var(--shadow);max-height:480px;overflow:auto;} 
-.calendar-controls{display:flex;justify-content:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;} 
-.calendar-controls select,.calendar-controls button{padding:6px 10px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:0.85rem;cursor:pointer;} 
-.calendar-table{width:100%;border-collapse:collapse;} 
-.calendar-table th,.calendar-table td{padding:8px;border-bottom:1px solid var(--border);font-size:0.82rem;text-align:center;} 
-.calendar-table th{color:var(--muted);background:#0f1623;} 
-.calendar-table tr:last-child td{border-bottom:none;} 
-.cal-today{background:rgba(58,163,255,0.12);font-weight:700;} 
-.calendar-legend{font-size:0.75rem;color:var(--muted);text-align:center;margin-top:4px;} 
-footer{text-align:center;margin-top:16px;padding-bottom:8px;} 
-footer .powered{font-size:0.7rem;color:var(--muted);} 
-footer .meta{font-size:0.6rem;color:#6b7890;margin-top:4px;} 
-@media (max-width:420px){ th,td{padding:8px;font-size:0.82rem;} .date-nav button{padding:8px;} }
+  /* Root colors */
+  :root {
+    --bg: #0b0f14;
+    --card: #111722;
+    --text: #e6edf3;
+    --muted: #9fb0c0;
+    --accent: #3aaaff;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+  }
+
+  h1 {
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+
+  .card {
+    background-color: var(--card);
+    border-radius: 1rem;
+    padding: 1rem;
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  }
+
+  .prayer-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .prayer-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    background-color: #1a1f2b;
+  }
+
+  .prayer-item.next {
+    background-color: var(--accent);
+    color: #fff;
+    font-weight: bold;
+  }
+
+  .countdown {
+    text-align: center;
+    font-size: 1.2rem;
+    margin-top: 0.5rem;
+    color: var(--accent);
+  }
+
+  .footer {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 1rem;
+    text-align: center;
+  }
 </style>
 </head>
 <body>
-<div class="app">
-<header>
-  <h1>Prayer times for Gosheim, Germany</h1>
-  <div class="sub" id="gregorian">—</div>
-  <div class="sub" id="hijri">—</div>
-</header><div id="error" class="error" role="alert"></div><div class="date-nav" aria-label="Datum Navigation">
-  <button id="prevDay" aria-label="Vorheriger Tag">&lt;</button>
-  <input type="date" id="dateInput" aria-label="Datum auswählen" />
-  <button id="todayBtn" aria-label="Heute">Today</button>
-  <button id="nextDay" aria-label="Nächster Tag">&gt;</button>
-</div><div class="next-row" aria-live="polite">
-  <div>
-    <span class="label">Next prayer</span>
-    <div class="next-prayer" id="nextName">—</div>
+
+<h1>Prayer Times – Gosheim, Germany</h1>
+
+<div class="card">
+  <div class="prayer-list">
+    <div class="prayer-item" id="fajr-row">Fajr <span id="fajr">—</span></div>
+    <div class="prayer-item" id="dhuhr-row">Dhuhr <span id="dhuhr">—</span></div>
+    <div class="prayer-item" id="asr-row">Asr <span id="asr">—</span></div>
+    <div class="prayer-item" id="maghrib-row">Maghrib <span id="maghrib">—</span></div>
+    <div class="prayer-item" id="isha-row">Isha <span id="isha">—</span></div>
   </div>
-  <div>
-    <span class="label">Countdown</span>
-    <div class="countdown" id="countdown">—</div>
-  </div>
-</div><table aria-label="Prayer times">
-  <thead><tr><th>Prayer</th><th>Time & Status</th></tr></thead>
-  <tbody id="tableBody"></tbody>
-</table><div class="ramadan-widget" aria-live="polite">
-  <div><strong>Days until Ramadan:</strong> <span id="ramadanCountdown">—</span></div>
-  <div class="sub" id="ramadanDate">—</div>
-</div><div class="calendar-toggle">
-  <button id="toggleCalendar">Show Monthly Calendar</button>
-</div><div class="calendar-container" id="calendarContainer">
-  <div class="calendar-controls">
-    <select id="monthSelect" aria-label="Monat wählen"></select>
-    <select id="yearSelect" aria-label="Jahr wählen"></select>
-    <button id="loadCalendar">Load</button>
-  </div>
-  <table class="calendar-table" id="calendarTable">
-    <thead>
-      <tr><th>Datum</th><th>Fajr</th><th>Dhuhr</th><th>Asr</th><th>Maghrib</th><th>Isha</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-  <div class="calendar-legend">Zeiten im 12-Stunden-Format (keine Zeitzone angezeigt)</div>
-</div><footer>
-  <div class="powered">Powered by AlAdhan API
+  <div class="countdown" id="next-prayer">Next prayer in —</div>
+</div>
+
+<div class="footer">
+  Powered by AlAdhan API • Method: Muslim World League • School: Hanafi
+</div>
+
+<script>
+const city = "Gosheim";
+const country = "Germany";
+const method = 3; // Muslim World League
+
+const prayerIds = ["fajr", "dhuhr", "asr", "maghrib", "isha"];
+const prayerRows = {
+  fajr: document.getElementById("fajr-row"),
+  dhuhr: document.getElementById("dhuhr-row"),
+  asr: document.getElementById("asr-row"),
+  maghrib: document.getElementById("maghrib-row"),
+  isha: document.getElementById("isha-row"),
+};
+
+function fetchPrayerTimes() {
+  fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=${country}&method=${method}`)
+    .then(res => res.json())
+    .then(data => {
+      const timings = data.data.timings;
+      prayerIds.forEach(prayer => {
+        document.getElementById(prayer).textContent = timings[prayer.charAt(0).toUpperCase() + prayer.slice(1)];
+      });
+      updateNextPrayer(timings);
+    });
+}
+
+function updateNextPrayer(timings) {
+  const now = new Date();
+  const today = now.toISOString().split('T')[0]; // yyyy-mm-dd
+
+  let nextPrayer = null;
+  let nextTime = null;
+
+  for (let prayer of prayerIds) {
+    const timeStr = `${today}T${timings[prayer.charAt(0).toUpperCase() + prayer.slice(1)]}:00`;
+    const prayerTime = new Date(timeStr);
+    if (prayerTime > now) {
+      nextPrayer = prayer;
+      nextTime = prayerTime;
+      break;
+    }
+  }
+
+  if (!nextPrayer) {
+    // If all prayers passed, take tomorrow Fajr
+    const tomorrow = new Date(now);
+    tomorrow.setDate(now.getDate() + 1);
+    const tomorrowDate = tomorrow.toISOString().split('T')[0];
+    nextPrayer = "fajr";
+    nextTime = new Date(`${tomorrowDate}T${timings.Fajr}:00`);
+  }
+
+  // Highlight next prayer
+  prayerIds.forEach(prayer => {
+    prayerRows[prayer].classList.remove("next");
+  });
+  prayerRows[nextPrayer].classList.add("next");
+
+  // Countdown
+  const countdownEl = document.getElementById("next-prayer");
+  const diffMs = nextTime - now;
+  const hours = Math.floor(diffMs / 1000 / 60 / 60);
+  const minutes = Math.floor((diffMs / 1000 / 60) % 60);
+  const seconds = Math.floor((diffMs / 1000) % 60);
+  countdownEl.textContent = `Next prayer (${nextPrayer.charAt(0).toUpperCase() + nextPrayer.slice(1)}) in ${hours}h ${minutes}m ${seconds}s`;
+}
+
+// Initial fetch and every minute update
+fetchPrayerTimes();
+setInterval(fetchPrayerTimes, 60000);
+</script>
+
+</body>
+</html>
